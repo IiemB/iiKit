@@ -44,6 +44,8 @@
    - Automatically ignores double-taps on icons, folders, widgets, notifications, media controls, and buttons.
 5. **Silent Phone Keypad (`Tweaks/PhoneKeypad.x`)**:
    - Disables DTMF keypad button tones when dialing in the **Phone** app (`com.apple.mobilephone` / `com.apple.InCallService`) via `PHAbstractDialerViewController`, `DialerController`, `TPDialerSoundController`, `TPPhonePad`, and `TPDialerNumberPad`.
+6. **App Switcher Swipe Down to Close All Apps (`Tweaks/AppSwitcher.x`)**:
+   - Swiping/pulling down on any app card in the App Switcher (`SBFluidSwitcherItemContainer`) closes all open apps (`SBFluidSwitcherViewController` / `SBMainSwitcherControllerCoordinator` / `SBRecentAppLayouts`) and triggers haptic feedback (`UIImpactFeedbackGenerator` + `UINotificationFeedbackGenerator`).
 
 ## Build Output
 Running `make package FINALPACKAGE=1` produces two `.deb` archives in `packages/`:
