@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 
 // ============================================================================
 // Transparency.x — AIOTweaks
@@ -7,6 +8,15 @@
 // 3. Transparent Home Bar (Home Grabber) globally across SpringBoard & all Apps
 //    while keeping swipe gestures active
 // ============================================================================
+
+// Safe ivar lookup: checks class_getInstanceVariable first so it NEVER throws NSUndefinedKeyException
+static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
+    if (!obj || !ivarName) return nil;
+    Ivar ivar = class_getInstanceVariable([obj class], ivarName);
+    if (!ivar) return nil;
+    id val = object_getIvar(obj, ivar);
+    return [val isKindOfClass:[UIView class]] ? (UIView *)val : nil;
+}
 
 @interface SBDockView : UIView
 - (void)setBackgroundAlpha:(double)alpha;
@@ -27,9 +37,6 @@
 
 @interface SBFolderIconImageView : UIView
 @property (nonatomic, retain) UIView *backgroundView;
-@end
-
-@interface _SBIconGridWrapperView : UIView
 @end
 
 @interface MTLumaDodgePillView : UIView
@@ -53,12 +60,12 @@
 
 - (void)layoutSubviews {
     %orig;
-    UIView *bgView = [self valueForKey:@"_backgroundView"];
+    UIView *bgView = safeGetViewIvarTR(self, "_backgroundView");
     if (bgView) {
         bgView.hidden = YES;
         bgView.alpha = 0.0;
     }
-    UIView *highlightView = [self valueForKey:@"_highlightView"];
+    UIView *highlightView = safeGetViewIvarTR(self, "_highlightView");
     if (highlightView) {
         highlightView.hidden = YES;
         highlightView.alpha = 0.0;
@@ -79,7 +86,7 @@
 
 - (void)layoutSubviews {
     %orig;
-    UIView *bgView = [self valueForKey:@"_backgroundView"];
+    UIView *bgView = safeGetViewIvarTR(self, "_backgroundView");
     if (bgView) {
         bgView.hidden = YES;
         bgView.alpha = 0.0;
@@ -111,11 +118,12 @@
     %orig(0.0);
 }
 
-- (void)_configureScrolling {
+- (void)layoutSubviews {
     %orig;
-    UIView *bgView = [self valueForKey:@"_scrollView"];
+    UIView *bgView = safeGetViewIvarTR(self, "_backgroundView");
     if (bgView) {
-        bgView.backgroundColor = [UIColor clearColor];
+        bgView.hidden = YES;
+        bgView.alpha = 0.0;
     }
 }
 
@@ -130,10 +138,6 @@
     self.alpha = 0.0;
 }
 
-- (void)setEffectActive:(BOOL)active {
-    %orig(NO);
-}
-
 %end
 
 // ----------------------------------------------------------------------------
@@ -143,12 +147,12 @@
 
 - (void)layoutSubviews {
     %orig;
-    UIView *bgView = [self valueForKey:@"_backgroundView"];
+    UIView *bgView = safeGetViewIvarTR(self, "_backgroundView");
     if (bgView) {
         bgView.hidden = YES;
         bgView.alpha = 0.0;
     }
-    UIView *solidColorView = [self valueForKey:@"_solidColorBackgroundView"];
+    UIView *solidColorView = safeGetViewIvarTR(self, "_solidColorBackgroundView");
     if (solidColorView) {
         solidColorView.hidden = YES;
         solidColorView.alpha = 0.0;
@@ -161,56 +165,6 @@
         view.hidden = YES;
         view.alpha = 0.0;
     }
-}
-
-- (UIImage *)_folderIconImageWithGridImage:(UIImage *)gridImage {
-    // Ensure closed folder background isn't baked into cached icon image
-    UIView *bgView = [self valueForKey:@"_backgroundView"];
-    if (bgView) {
-        bgView.hidden = YES;
-        bgView.alpha = 0.0;
-    }
-    return %orig;
-}
-
-%end
-
-// Also suppress static folder icon background image generation if used during caching/zoom
-%hook SBFolderIcon
-
-+ (id)_iconGridImageWithSize:(CGSize)size {
-    return %orig;
-}
-
-%end
-
-// ----------------------------------------------------------------------------
-// 3A. Transparent Home Bar in SpringBoard
-// ----------------------------------------------------------------------------
-%hook SBFHomeGrabberView
-
-- (void)layoutSubviews {
-    %orig;
-    self.alpha = 0.0;
-    self.hidden = YES;
-}
-
-- (void)setHidden:(BOOL)hidden forReason:(id)reason withAnimationSettings:(id)settings {
-    %orig(YES, reason, settings);
-}
-
-%end
-
-%hook SBHomeGrabberView
-
-- (void)layoutSubviews {
-    %orig;
-    self.alpha = 0.0;
-    self.hidden = YES;
-}
-
-- (void)setHidden:(BOOL)hidden forReason:(id)reason withAnimationSettings:(id)settings {
-    %orig(YES, reason, settings);
 }
 
 %end
@@ -238,16 +192,12 @@
     self.hidden = YES;
 }
 
-- (void)setStyle:(long long)style {
-    %orig(0);
-    self.alpha = 0.0;
-    self.hidden = YES;
+- (CGFloat)alpha {
+    return 0.0;
 }
 
-- (void)setBackgroundLuminance:(long long)luminance {
-    %orig(luminance);
-    self.alpha = 0.0;
-    self.hidden = YES;
+- (void)setAlpha:(CGFloat)alpha {
+    %orig(0.0);
 }
 
 %end
@@ -255,12 +205,18 @@
 %end // group GlobalHomeBarTransparency
 
 %ctor {
-    // Initialize global Home Bar transparency in SpringBoard and all UIKit apps
-    %init(GlobalHomeBarTransparency);
+    @autoreleasepool {
+        // Only initialize inside SpringBoard or standard user/system applications (skip background daemons)
+        NSBundle *mainBundle = [NSBundle mainBundle];
+        NSString *bundleID = [mainBundle bundleIdentifier];
+        if (!bundleID) return;
 
-    // Initialize Dock & Folder transparency only inside SpringBoard
-    NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-    if ([bundleID isEqualToString:@"com.apple.springboard"]) {
-        %init(SpringBoardTransparency);
+        BOOL isSpringBoard = [bundleID isEqualToString:@"com.apple.springboard"];
+        if (isSpringBoard) {
+            %init(SpringBoardTransparency);
+        }
+        if (isSpringBoard || [[mainBundle executablePath] containsString:@".app/"]) {
+            %init(GlobalHomeBarTransparency);
+        }
     }
 }

@@ -1,10 +1,19 @@
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 
 // ============================================================================
 // LockScreen.x — AIOTweaks
 // 1. Removes Lock Screen Flashlight and Camera quick action buttons
 // 2. Disables Lock Screen Today View (swipe right) and Camera (swipe left)
 // ============================================================================
+
+static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
+    if (!obj || !ivarName) return nil;
+    Ivar ivar = class_getInstanceVariable([obj class], ivarName);
+    if (!ivar) return nil;
+    id val = object_getIvar(obj, ivar);
+    return [val isKindOfClass:[UIView class]] ? (UIView *)val : nil;
+}
 
 @interface CSQuickActionsView : UIView
 @property (nonatomic, retain) UIView *flashlightButton;
@@ -68,12 +77,12 @@
     self.alpha = 0.0;
     self.userInteractionEnabled = NO;
 
-    UIView *flashlight = [self valueForKey:@"_flashlightButton"];
+    UIView *flashlight = safeGetViewIvarLS(self, "_flashlightButton");
     if (flashlight) {
         flashlight.hidden = YES;
         flashlight.alpha = 0.0;
     }
-    UIView *camera = [self valueForKey:@"_cameraButton"];
+    UIView *camera = safeGetViewIvarLS(self, "_cameraButton");
     if (camera) {
         camera.hidden = YES;
         camera.alpha = 0.0;

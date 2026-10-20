@@ -1,4 +1,14 @@
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
+
+// Safe ivar helper: checks class_getInstanceVariable first so it NEVER throws NSUndefinedKeyException
+static inline UIView *safeGetViewIvar(id obj, const char *ivarName) {
+    if (!obj || !ivarName) return nil;
+    Ivar ivar = class_getInstanceVariable([obj class], ivarName);
+    if (!ivar) return nil;
+    id val = object_getIvar(obj, ivar);
+    return [val isKindOfClass:[UIView class]] ? (UIView *)val : nil;
+}
 
 @interface SBIconView : UIView
 @property (nonatomic, assign, getter=isLabelHidden) BOOL labelHidden;
@@ -48,7 +58,7 @@
 
 - (void)_updateLabelAccessoryView {
     %orig;
-    UIView *accessoryView = [self valueForKey:@"_labelAccessoryView"];
+    UIView *accessoryView = safeGetViewIvar(self, "_labelAccessoryView");
     if (accessoryView) {
         accessoryView.hidden = YES;
         accessoryView.alpha = 0.0;
@@ -57,12 +67,12 @@
 
 - (void)_updateLabel {
     %orig;
-    UIView *labelView = [self valueForKey:@"_labelView"];
+    UIView *labelView = safeGetViewIvar(self, "_labelView");
     if (labelView) {
         labelView.hidden = YES;
         labelView.alpha = 0.0;
     }
-    UIView *accessoryView = [self valueForKey:@"_labelAccessoryView"];
+    UIView *accessoryView = safeGetViewIvar(self, "_labelAccessoryView");
     if (accessoryView) {
         accessoryView.hidden = YES;
         accessoryView.alpha = 0.0;
@@ -71,12 +81,12 @@
 
 - (void)layoutSubviews {
     %orig;
-    UIView *labelView = [self valueForKey:@"_labelView"];
+    UIView *labelView = safeGetViewIvar(self, "_labelView");
     if (labelView) {
         labelView.hidden = YES;
         labelView.alpha = 0.0;
     }
-    UIView *accessoryView = [self valueForKey:@"_labelAccessoryView"];
+    UIView *accessoryView = safeGetViewIvar(self, "_labelAccessoryView");
     if (accessoryView) {
         accessoryView.hidden = YES;
         accessoryView.alpha = 0.0;
