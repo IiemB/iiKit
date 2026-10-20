@@ -21,6 +21,8 @@
 @interface SBFolderTitleTextField : UITextField
 @end
 
+%group SpringBoardIconLabels
+
 // 1. Hide icon and folder labels on Home Screen & Dock, and remove accessory dots (TestFlight orange/yellow dot, blue update dot, green/cloud accessories)
 %hook SBIconView
 
@@ -143,7 +145,7 @@
 
 %end
 
-// 5. Hide open folder title header text on Home Screen if desired
+// 5. Hide open folder title header text on Home Screen
 %hook SBFolderTitleTextField
 
 - (void)layoutSubviews {
@@ -159,3 +161,12 @@
 }
 
 %end
+
+%end // group SpringBoardIconLabels
+
+%ctor {
+    NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+    if ([bundleID isEqualToString:@"com.apple.springboard"]) {
+        %init(SpringBoardIconLabels);
+    }
+}

@@ -19,6 +19,8 @@
 @interface CSQuickActionControlView : UIView
 @end
 
+%group SpringBoardLockScreen
+
 // ----------------------------------------------------------------------------
 // 1. Remove Flashlight & Camera Quick Action Buttons on Lock Screen
 // ----------------------------------------------------------------------------
@@ -146,8 +148,6 @@
 
 // Filters out Camera and Today View capabilities from CoverSheet restricted capabilities
 - (unsigned long long)restrictedCapabilities {
-    // 0x4 = Camera, 0x40 / 0x80 = TodayView/Spotlight depending on iOS version
-    // Returning %orig while blocking _canShowCamera / _canShowTodayView & page creation
     return %orig | (1ULL << 2) | (1ULL << 6);
 }
 
@@ -200,9 +200,13 @@
     return NO;
 }
 
-- (BOOL)_allowsCapabilityTodayViewWithExplanation:(id *)arg1 {
-    // Only block when on Lock Screen / CoverSheet is visible
-    return %orig;
-}
-
 %end
+
+%end // group SpringBoardLockScreen
+
+%ctor {
+    NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+    if ([bundleID isEqualToString:@"com.apple.springboard"]) {
+        %init(SpringBoardLockScreen);
+    }
+}
