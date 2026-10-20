@@ -36,6 +36,7 @@
    - Removes the Lock Screen **Flashlight** and **Camera** quick action buttons (`CSQuickActionsViewController`, `SBDashBoardQuickActionsViewController`, `CSQuickActionsView`, `CSQuickActionControlView`).
    - Disables **Today View** (swipe right on Lock Screen) and **Camera** (swipe left on Lock Screen) (`CSCoverSheetViewController`, `SBDashBoardPolicyBasedBehaviorProvider`, `SBMainDisplayPolicyAggregator`, `SBDashBoardViewController`).
    - Disables Lock Screen camera pre-warming (`SBCameraPrewarmManager`) when touching the right edge.
+   - Disables the iOS 16+ **touch-and-hold Lock Screen wallpaper/poster switcher** (`-[CSCoverSheetViewController _setupPosterSwitcherGestureRecognizer]` & `-[CSCoverSheetViewController _handlePosterSwitcherActivation:]`).
 3. **Transparent Dock & Global Home Bar (`Tweaks/Transparency.x`)**:
    - **Transparent Dock**: Hides the Home Screen and Floating Dock background blur/platter (`SBDockView`, `SBFloatingDockPlatterView`).
    - **Transparent Home Bar Across All Apps**: Hides the bottom Home Indicator pill (`MTLumaDodgePillView`) across `SpringBoard` and all `UIKit` apps while preserving all swipe gestures.

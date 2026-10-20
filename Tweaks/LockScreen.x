@@ -140,6 +140,17 @@ static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
     return NO;
 }
 
+// ----------------------------------------------------------------------------
+// 3. Disable iOS 16+ Lock Screen Touch-and-Hold Wallpaper/Poster Switcher
+// ----------------------------------------------------------------------------
+- (void)_setupPosterSwitcherGestureRecognizer {
+    // Prevent CoverSheet from installing the long-press wallpaper switcher recognizer
+}
+
+- (void)_handlePosterSwitcherActivation:(id)sender {
+    // Prevent Lock Screen wallpaper switcher / customization gallery activation
+}
+
 %end
 
 // Policy / Capability Provider for Lock Screen Camera & Today View
