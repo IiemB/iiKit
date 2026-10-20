@@ -39,6 +39,11 @@
 3. **Transparent Dock & Global Home Bar (`Tweaks/Transparency.x`)**:
    - **Transparent Dock**: Hides the Home Screen and Floating Dock background blur/platter (`SBDockView`, `SBFloatingDockPlatterView`).
    - **Transparent Home Bar Across All Apps**: Hides the bottom Home Indicator pill (`MTLumaDodgePillView`) across `SpringBoard` and all `UIKit` apps while preserving all swipe gestures.
+4. **Double-Tap to Sleep (`Tweaks/DoubleTapSleep.x`)**:
+   - Double-tap empty space on the **Home Screen** (`SBIconListView`) or **Lock Screen** (`CSCoverSheetView`) to immediately lock/sleep the device (`_simulateLockButtonPress` / `SBLockScreenManager`).
+   - Automatically ignores double-taps on icons, folders, widgets, notifications, media controls, and buttons.
+5. **Silent Phone Keypad (`Tweaks/PhoneKeypad.x`)**:
+   - Disables DTMF keypad button tones when dialing in the **Phone** app (`com.apple.mobilephone` / `com.apple.InCallService`) via `PHAbstractDialerViewController`, `DialerController`, `TPDialerSoundController`, `TPPhonePad`, and `TPDialerNumberPad`.
 
 ## Build Output
 Running `make package FINALPACKAGE=1` produces two `.deb` archives in `packages/`:

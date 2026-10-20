@@ -2,7 +2,7 @@ export THEOS ?= /Users/iiemb/theos
 THEOS_PACKAGE_SCHEME = rootless
 
 TARGET := iphone:clang:latest:15.0
-INSTALL_TARGET_PROCESSES = SpringBoard
+INSTALL_TARGET_PROCESSES = SpringBoard MobilePhone InCallService
 ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
