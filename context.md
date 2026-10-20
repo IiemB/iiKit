@@ -36,10 +36,9 @@
    - Removes the Lock Screen **Flashlight** and **Camera** quick action buttons (`CSQuickActionsViewController`, `SBDashBoardQuickActionsViewController`, `CSQuickActionsView`, `CSQuickActionControlView`).
    - Disables **Today View** (swipe right on Lock Screen) and **Camera** (swipe left on Lock Screen) (`CSCoverSheetViewController`, `SBDashBoardPolicyBasedBehaviorProvider`, `SBMainDisplayPolicyAggregator`, `SBDashBoardViewController`).
    - Disables Lock Screen camera pre-warming (`SBCameraPrewarmManager`) when touching the right edge.
-3. **Transparent Dock, Folders (Open/Closed), and Global Home Bar (`Tweaks/Transparency.x`)**:
+3. **Transparent Dock & Global Home Bar (`Tweaks/Transparency.x`)**:
    - **Transparent Dock**: Hides the Home Screen and Floating Dock background blur/platter (`SBDockView`, `SBFloatingDockPlatterView`).
-   - **Transparent Folders (Closed & Open)**: Hides the closed folder icon background platter (`SBFolderIconImageView`) and the open folder inner square platter (`SBFolderBackgroundView`, `SBFloatyFolderView`), while preserving the outer Home Screen wallpaper blur when a folder is opened.
-   - **Transparent Home Bar Across All Apps**: Hides the bottom Home Indicator pill (`MTLumaDodgePillView`, `SBFHomeGrabberView`, `SBHomeGrabberView`) across `SpringBoard` and all `UIKit` apps while preserving all swipe gestures.
+   - **Transparent Home Bar Across All Apps**: Hides the bottom Home Indicator pill (`MTLumaDodgePillView`) across `SpringBoard` and all `UIKit` apps while preserving all swipe gestures.
 
 ## Build Output
 Running `make package FINALPACKAGE=1` produces two `.deb` archives in `packages/`:
