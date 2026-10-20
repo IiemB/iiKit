@@ -28,9 +28,6 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
 @interface SBFolderBackgroundView : UIView
 @end
 
-@interface SBFolderControllerBackgroundView : UIView
-@end
-
 @interface SBFloatyFolderView : UIView
 - (void)setBackgroundAlpha:(CGFloat)alpha;
 @end
@@ -96,7 +93,7 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
 %end
 
 // ----------------------------------------------------------------------------
-// 2A. Transparent Open Folder View (Inner Platter + Outer Wallpaper Blur)
+// 2A. Transparent Open Folder Inner Square Only (Keep Outer Wallpaper Blur)
 // ----------------------------------------------------------------------------
 %hook SBFolderBackgroundView
 
@@ -125,17 +122,6 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
         bgView.hidden = YES;
         bgView.alpha = 0.0;
     }
-}
-
-%end
-
-// Remove outer wallpaper blur when opening a folder
-%hook SBFolderControllerBackgroundView
-
-- (void)layoutSubviews {
-    %orig;
-    self.hidden = YES;
-    self.alpha = 0.0;
 }
 
 %end
