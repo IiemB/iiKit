@@ -1,0 +1,161 @@
+#import <UIKit/UIKit.h>
+
+@interface SBIconView : UIView
+@property (nonatomic, assign, getter=isLabelHidden) BOOL labelHidden;
+@property (nonatomic, readonly) UIView *labelView;
+@property (nonatomic, readonly) UIView *labelAccessoryView;
+- (void)setLabelHidden:(BOOL)hidden;
+- (void)_updateLabelAccessoryView;
+- (void)_updateLabel;
+@end
+
+@interface SBIconLabelImageParameters : NSObject
+@property (nonatomic, readonly, copy) NSString *text;
+@end
+
+@interface SBIconLabelImageParametersBuilder : NSObject
+- (void)setText:(NSString *)text;
+- (void)setHasAccessory:(BOOL)hasAccessory;
+@end
+
+@interface SBFolderTitleTextField : UITextField
+@end
+
+// 1. Hide icon and folder labels on Home Screen & Dock, and remove accessory dots (TestFlight orange/yellow dot, blue update dot, green/cloud accessories)
+%hook SBIconView
+
+- (void)setLabelHidden:(BOOL)hidden {
+    %orig(YES);
+}
+
+- (BOOL)isLabelHidden {
+    return YES;
+}
+
+- (BOOL)shouldShowLabelAccessoryView {
+    return NO;
+}
+
+- (BOOL)hasLabelAccessoryView {
+    return NO;
+}
+
+- (long long)currentLabelAccessoryType {
+    return 0;
+}
+
+- (void)_updateLabelAccessoryView {
+    %orig;
+    UIView *accessoryView = [self valueForKey:@"_labelAccessoryView"];
+    if (accessoryView) {
+        accessoryView.hidden = YES;
+        accessoryView.alpha = 0.0;
+    }
+}
+
+- (void)_updateLabel {
+    %orig;
+    UIView *labelView = [self valueForKey:@"_labelView"];
+    if (labelView) {
+        labelView.hidden = YES;
+        labelView.alpha = 0.0;
+    }
+    UIView *accessoryView = [self valueForKey:@"_labelAccessoryView"];
+    if (accessoryView) {
+        accessoryView.hidden = YES;
+        accessoryView.alpha = 0.0;
+    }
+}
+
+- (void)layoutSubviews {
+    %orig;
+    UIView *labelView = [self valueForKey:@"_labelView"];
+    if (labelView) {
+        labelView.hidden = YES;
+        labelView.alpha = 0.0;
+    }
+    UIView *accessoryView = [self valueForKey:@"_labelAccessoryView"];
+    if (accessoryView) {
+        accessoryView.hidden = YES;
+        accessoryView.alpha = 0.0;
+    }
+}
+
+%end
+
+// 2. Prevent label text and dot accessories from being built in SBIconLabelImageParametersBuilder
+%hook SBIconLabelImageParametersBuilder
+
+- (id)buildParameters {
+    [self setText:@""];
+    return %orig;
+}
+
+- (void)setText:(NSString *)text {
+    %orig(@"");
+}
+
+- (long long)labelAccessoryType {
+    return 0;
+}
+
+%end
+
+// 3. Ensure SBIconLabelImageParameters always returns an empty string & no accessory
+%hook SBIconLabelImageParameters
+
+- (NSString *)text {
+    return @"";
+}
+
+%end
+
+// 4. Suppress TestFlight / Beta & Newly Updated dots at the SBIcon / SBApplicationIcon data model level
+%hook SBIcon
+
+- (long long)labelAccessoryType {
+    return 0;
+}
+
+%end
+
+%hook SBApplicationIcon
+
+- (long long)labelAccessoryType {
+    return 0;
+}
+
+%end
+
+%hook SBApplication
+
+- (BOOL)isBeta {
+    return NO;
+}
+
+- (BOOL)hasBeenUpdated {
+    return NO;
+}
+
+- (BOOL)isRecentlyUpdated {
+    return NO;
+}
+
+%end
+
+// 5. Hide open folder title header text on Home Screen if desired
+%hook SBFolderTitleTextField
+
+- (void)layoutSubviews {
+    %orig;
+    if (!self.isEditing) {
+        self.alpha = 0.0;
+        self.hidden = YES;
+    }
+}
+
+- (void)setText:(NSString *)text {
+    %orig(@"");
+}
+
+%end

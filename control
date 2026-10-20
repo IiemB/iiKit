@@ -1,0 +1,9 @@
+Package: com.iiemb.aiotweaks
+Name: AIOTweaks
+Version: 1.1.0
+Architecture: iphoneos-arm64
+Description: All-in-one personal jailbreak tweak suite for rootless and roothide (Dopamine) — removes Home Screen labels/TestFlight dots, removes Lock Screen Flashlight/Camera buttons, and disables Lock Screen Today View & Camera swipe access.
+Maintainer: iiemb
+Author: iiemb
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
