@@ -9,7 +9,7 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = AIOTweaks
 
-AIOTweaks_FILES = $(wildcard Tweak.x Tweaks/*.x Tweaks/*.xm)
+AIOTweaks_FILES = $(wildcard Tweaks/*.x Tweaks/*.xm)
 AIOTweaks_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
 
 include $(THEOS_MAKE_PATH)/tweak.mk

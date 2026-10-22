@@ -1,8 +1,15 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
+// ============================================================================
+// HomeScreenLabels.x — AIOTweaks
+// 1. Hides all Home Screen and Dock app icon & folder labels
+// 2. Removes TestFlight beta orange/yellow dot & update blue dot
+// 3. Hides open folder title header text
+// ============================================================================
+
 // Safe ivar helper: checks class_getInstanceVariable first so it NEVER throws NSUndefinedKeyException
-static inline UIView *safeGetViewIvar(id obj, const char *ivarName) {
+static inline UIView *safeGetViewIvarHSL(id obj, const char *ivarName) {
     if (!obj || !ivarName) return nil;
     Ivar ivar = class_getInstanceVariable([obj class], ivarName);
     if (!ivar) return nil;
@@ -58,7 +65,7 @@ static inline UIView *safeGetViewIvar(id obj, const char *ivarName) {
 
 - (void)_updateLabelAccessoryView {
     %orig;
-    UIView *accessoryView = safeGetViewIvar(self, "_labelAccessoryView");
+    UIView *accessoryView = safeGetViewIvarHSL(self, "_labelAccessoryView");
     if (accessoryView) {
         accessoryView.hidden = YES;
         accessoryView.alpha = 0.0;
@@ -67,12 +74,12 @@ static inline UIView *safeGetViewIvar(id obj, const char *ivarName) {
 
 - (void)_updateLabel {
     %orig;
-    UIView *labelView = safeGetViewIvar(self, "_labelView");
+    UIView *labelView = safeGetViewIvarHSL(self, "_labelView");
     if (labelView) {
         labelView.hidden = YES;
         labelView.alpha = 0.0;
     }
-    UIView *accessoryView = safeGetViewIvar(self, "_labelAccessoryView");
+    UIView *accessoryView = safeGetViewIvarHSL(self, "_labelAccessoryView");
     if (accessoryView) {
         accessoryView.hidden = YES;
         accessoryView.alpha = 0.0;
@@ -81,12 +88,12 @@ static inline UIView *safeGetViewIvar(id obj, const char *ivarName) {
 
 - (void)layoutSubviews {
     %orig;
-    UIView *labelView = safeGetViewIvar(self, "_labelView");
+    UIView *labelView = safeGetViewIvarHSL(self, "_labelView");
     if (labelView) {
         labelView.hidden = YES;
         labelView.alpha = 0.0;
     }
-    UIView *accessoryView = safeGetViewIvar(self, "_labelAccessoryView");
+    UIView *accessoryView = safeGetViewIvarHSL(self, "_labelAccessoryView");
     if (accessoryView) {
         accessoryView.hidden = YES;
         accessoryView.alpha = 0.0;
@@ -175,8 +182,10 @@ static inline UIView *safeGetViewIvar(id obj, const char *ivarName) {
 %end // group SpringBoardIconLabels
 
 %ctor {
-    NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-    if ([bundleID isEqualToString:@"com.apple.springboard"]) {
-        %init(SpringBoardIconLabels);
+    @autoreleasepool {
+        NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+        if ([bundleID isEqualToString:@"com.apple.springboard"]) {
+            %init(SpringBoardIconLabels);
+        }
     }
 }
