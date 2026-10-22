@@ -11,6 +11,24 @@ static NSString *const kAIOTweaksPreferencesDeepLink = @"prefs:root=AIOTweaks";
 - (BOOL)openURL:(NSURL *)url withOptions:(NSDictionary *)options;
 @end
 
+@interface SBLockScreenManager : NSObject
++ (instancetype)sharedInstanceIfExists;
+- (BOOL)isUILocked;
+@end
+
+// Provided by ControlCenterUIKit and handed to the module by Control Center.
+// Its open service is the sanctioned path for launching an app while the device
+// is locked, once the user authenticates.
+@interface CCUIContentModuleContext : NSObject
+- (void)openURL:(NSURL *)url completionHandler:(void (^)(BOOL success))completionHandler;
+- (void)requestAuthenticationWithCompletionHandler:(void (^)(BOOL authenticated))completionHandler;
+- (void)dismissControlCenter;
+@end
+
+@interface CCUIToggleModule (AIOTweaksContentModuleContext)
+- (id)contentModuleContext;
+@end
+
 // A scheme must start with a letter and contain only RFC 3986 scheme characters,
 // so "example.com" and "192.168.1.1:8080" are treated as hosts, not schemes.
 static BOOL AIOTweaksHasValidScheme(NSString *candidate) {
@@ -45,31 +63,45 @@ static NSString *AIOTweaksNormalizedURLString(NSString *rawValue) {
     return [candidate stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
 }
 
-// SpringBoard is blocked until this returns, so the launch is handed to the
-// asynchronous UIApplication API and only falls back to the synchronous
-// LSApplicationWorkspace call from a background queue.
-static void AIOTweaksOpenURL(NSURL *url) {
-    if (!url) return;
+static BOOL AIOTweaksDeviceIsLocked(void) {
+    Class managerClass = objc_getClass("SBLockScreenManager");
+    if (!managerClass) return NO;
 
-    void (^workspaceFallback)(void) = ^{
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-            Class workspaceClass = objc_getClass("LSApplicationWorkspace");
-            if (!workspaceClass) return;
-            id workspace = [workspaceClass respondsToSelector:@selector(defaultWorkspace)]
-                ? [workspaceClass defaultWorkspace]
-                : nil;
-            if ([workspace respondsToSelector:@selector(openURL:withOptions:)]) {
-                [(LSApplicationWorkspace *)workspace openURL:url withOptions:@{}];
-            } else if ([workspace respondsToSelector:@selector(openURL:)]) {
-                [(LSApplicationWorkspace *)workspace openURL:url];
-            }
-        });
-    };
+    id manager = [(id)managerClass respondsToSelector:@selector(sharedInstanceIfExists)]
+        ? [(id)managerClass sharedInstanceIfExists]
+        : nil;
+    if ([manager respondsToSelector:@selector(isUILocked)]) {
+        return [(SBLockScreenManager *)manager isUILocked];
+    }
+    return NO;
+}
+
+// LSApplicationWorkspace blocks until the target app finishes launching, so it
+// is only ever called off the main thread.
+static void AIOTweaksOpenURLWithWorkspace(NSURL *url) {
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        Class workspaceClass = objc_getClass("LSApplicationWorkspace");
+        if (!workspaceClass) return;
+
+        id workspace = [(id)workspaceClass respondsToSelector:@selector(defaultWorkspace)]
+            ? [(id)workspaceClass defaultWorkspace]
+            : nil;
+        if ([workspace respondsToSelector:@selector(openURL:withOptions:)]) {
+            [(LSApplicationWorkspace *)workspace openURL:url withOptions:@{}];
+        } else if ([workspace respondsToSelector:@selector(openURL:)]) {
+            [(LSApplicationWorkspace *)workspace openURL:url];
+        }
+    });
+}
+
+// Asynchronous, never blocks SpringBoard. Used when no module context is available.
+static void AIOTweaksOpenURLAsync(NSURL *url) {
+    if (!url) return;
 
     void (^openOnMainThread)(void) = ^{
         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
             if (!success) {
-                workspaceFallback();
+                AIOTweaksOpenURLWithWorkspace(url);
             }
         }];
     };
@@ -102,22 +134,49 @@ static void AIOTweaksOpenURL(NSURL *url) {
 - (void)setSelected:(BOOL)selected {
     if (!selected) return;
 
-    // Defer so the tile can finish its tap animation before SpringBoard starts
-    // launching the target app.
+    // Defer so the tile can finish its tap animation before the launch starts.
     dispatch_async(dispatch_get_main_queue(), ^{
         static NSTimeInterval lastOpenTimestamp = 0;
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
         if (now - lastOpenTimestamp < 1.0) return;
         lastOpenTimestamp = now;
 
-        NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:AIOTweaksPrefsDomain];
-        NSString *normalized = AIOTweaksNormalizedURLString([defaults stringForKey:AIOTweaksPrefURLLauncher]);
-        if (!normalized) {
-            normalized = kAIOTweaksPreferencesDeepLink;
-        }
-
-        AIOTweaksOpenURL([NSURL URLWithString:normalized]);
+        [self aioOpenConfiguredURL];
     });
+}
+
+- (void)aioOpenConfiguredURL {
+    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:AIOTweaksPrefsDomain];
+    NSString *normalized = AIOTweaksNormalizedURLString([defaults stringForKey:AIOTweaksPrefURLLauncher]);
+    NSURL *url = [NSURL URLWithString:normalized ?: kAIOTweaksPreferencesDeepLink];
+    if (!url) return;
+
+    id context = [self respondsToSelector:@selector(contentModuleContext)] ? [self contentModuleContext] : nil;
+    if (![context respondsToSelector:@selector(openURL:completionHandler:)]) {
+        AIOTweaksOpenURLAsync(url);
+        return;
+    }
+
+    void (^openInControlCenter)(void) = ^{
+        [(CCUIContentModuleContext *)context openURL:url completionHandler:^(BOOL success) {
+            if (!success) {
+                AIOTweaksOpenURLWithWorkspace(url);
+            }
+        }];
+    };
+
+    // Launching an app while locked is refused, so authenticate first and only
+    // open once the user has actually unlocked.
+    if (AIOTweaksDeviceIsLocked() &&
+        [context respondsToSelector:@selector(requestAuthenticationWithCompletionHandler:)]) {
+        [(CCUIContentModuleContext *)context requestAuthenticationWithCompletionHandler:^(BOOL authenticated) {
+            if (!authenticated) return;
+            dispatch_async(dispatch_get_main_queue(), openInControlCenter);
+        }];
+        return;
+    }
+
+    dispatch_async(dispatch_get_main_queue(), openInControlCenter);
 }
 
 @end

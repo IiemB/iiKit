@@ -1,6 +1,6 @@
 Package: com.iiemb.aiotweaks
 Name: AIOTweaks
-Version: 1.8.1
+Version: 1.8.2
 Architecture: iphoneos-arm64
 Description: All-in-one personal jailbreak tweak suite for rootless and roothide (Dopamine) — every feature can be enabled or disabled in Settings → AIOTweaks: clean Home Screen & Folder labels/TestFlight dots, no Home Screen Today View, clean Lock Screen (no Flashlight/Camera/Today View/Camera swipe/long-press wallpaper edit), transparent Dock & global Home Bar, double-tap to sleep, silent Phone keypad, swipe down in App Switcher to close all apps, OLED black keyboard, and a 1x1 Control Center tile that opens any URL you configure.
 Maintainer: iiemb
