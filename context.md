@@ -20,6 +20,8 @@
 ├── AIOTweaks.plist   # MobileSubstrate/ElleKit injection filter
 ├── Tweak.x           # Index overview (all active modules live in Tweaks/*.x)
 ├── Tweaks/           # Modular Logos (.x) feature files auto-compiled by Makefile
+│   ├── AIOTweaksPrefs.h
+│   ├── PreferencesBridge.x
 │   ├── HomeScreenLabels.x
 │   ├── HomeScreenTodayView.x
 │   ├── LockScreen.x
@@ -28,6 +30,8 @@
 │   ├── PhoneKeypad.x
 │   ├── AppSwitcher.x
 │   └── OLEDKeyboard.x
+├── prefs/            # Settings preference bundle (AIOTweaksPrefs)
+├── layout/           # PreferenceLoader entry for Settings
 ├── packages/         # Output directory for built .deb packages
 ├── context.md        # Project architecture, target environment, and feature inventory
 └── agents.md         # Instructions and conventions for AI coding agents
@@ -62,7 +66,23 @@
    - Handles both the single leading custom view (iOS 15–17) and the indexed leading custom view list introduced in iOS 18 (`leadingCustomViewControllers`).
    - Disables the leading-edge Home Screen overlay/sidebar Today View on iPad and newer iOS versions (`SBHomeScreenOverlayController`).
 
+## Preferences
+- **Settings → AIOTweaks** page (`prefs/`, installed as `AIOTweaksPrefs.bundle` via PreferenceLoader) with its own icon (`prefs/Resources/icon.png`, `@2x`, `@3x`).
+- Every feature has its own switch; all default to **ON**, preserving previous behavior.
+  - Home Screen: icon labels/dots, Today View page.
+  - Lock Screen: quick actions, Today View/Camera swipes, wallpaper switcher, camera prewarm.
+  - Appearance: transparent Dock, transparent Home Bar, OLED keyboard.
+  - Gestures: double-tap to sleep, App Switcher swipe-down close all.
+  - Phone: silent keypad.
+- Preferences are stored in the `com.iiemb.aiotweaks` `NSUserDefaults` suite (no hardcoded `/var/jb` path).
+- Apply after a respring; the page includes a **Respring Now** button (`PreferencesBridge.x` restarts SpringBoard via Darwin notification).
+
 ## Build Output
 Running `make package FINALPACKAGE=1` produces two `.deb` archives in `packages/`:
 - `com.iiemb.aiotweaks_<version>_iphoneos-arm64.deb` (Rootless `/var/jb`)
 - `com.iiemb.aiotweaks_<version>_iphoneos-arm64e.deb` (Roothide relative `/` with `@loader_path/.jbroot` `LC_RPATH`)
+
+Both packages install:
+- `AIOTweaks.dylib` + filter plist in `Library/MobileSubstrate/DynamicLibraries`
+- `AIOTweaksPrefs.bundle` in `Library/PreferenceBundles`
+- `AIOTweaks.plist` in `Library/PreferenceLoader/Preferences` (Settings entry)

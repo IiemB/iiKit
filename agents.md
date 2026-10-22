@@ -24,6 +24,10 @@ This document defines the workflow, build rules, and coding conventions for AI a
   - If a new feature hooks a process other than `SpringBoard` (e.g., `UIKit` across apps, `Preferences`, or specific third-party bundle IDs):
     1. Update `AIOTweaks.plist` if additional bundle/class filters are needed.
     2. Use Logos `%group` blocks (e.g., `%group SpringBoardHooks`, `%group AppHooks`) and selectively initialize them inside `%ctor` by checking `[[NSBundle mainBundle].bundleIdentifier ...]` or process name so SpringBoard hooks never execute inside unrelated apps or daemons.
+- **Feature Toggles (`Tweaks/AIOTweaksPrefs.h` & `prefs/`)**:
+  - Every feature module must gate its `%init(...)` with `AIOTweaksPrefEnabled(AIOTweaksPref<Feature>)` and declare the key in `Tweaks/AIOTweaksPrefs.h`.
+  - Add the matching switch in `prefs/AIOTweaksPrefsListController.m`; all keys default to `ON` so existing installs keep their behavior.
+  - Preference changes apply after a respring (`PreferencesBridge.x` handles the Settings respring button).
 
 ## 3. Roothide & Rootless Path Compatibility
 - **Avoid Hardcoded `/var/jb` Paths**:

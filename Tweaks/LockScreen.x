@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // LockScreen.x — AIOTweaks
@@ -28,7 +29,7 @@ static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
 @interface CSQuickActionControlView : UIView
 @end
 
-%group SpringBoardLockScreen
+%group SpringBoardLockScreenQuickActions
 
 // ----------------------------------------------------------------------------
 // 1. Remove Flashlight & Camera Quick Action Buttons on Lock Screen
@@ -109,6 +110,10 @@ static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
 
 %end
 
+%end // group SpringBoardLockScreenQuickActions
+
+%group SpringBoardLockScreenPageSwipes
+
 // ----------------------------------------------------------------------------
 // 2. Disable Lock Screen Today View (Left Page) & Camera (Right Page) Swipes
 // ----------------------------------------------------------------------------
@@ -140,17 +145,6 @@ static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
     return NO;
 }
 
-// ----------------------------------------------------------------------------
-// 3. Disable iOS 16+ Lock Screen Touch-and-Hold Wallpaper/Poster Switcher
-// ----------------------------------------------------------------------------
-- (void)_setupPosterSwitcherGestureRecognizer {
-    // Prevent CoverSheet from installing the long-press wallpaper switcher recognizer
-}
-
-- (void)_handlePosterSwitcherActivation:(id)sender {
-    // Prevent Lock Screen wallpaper switcher / customization gallery activation
-}
-
 %end
 
 // Policy / Capability Provider for Lock Screen Camera & Today View
@@ -169,19 +163,6 @@ static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
 // Filters out Camera and Today View capabilities from CoverSheet restricted capabilities
 - (unsigned long long)restrictedCapabilities {
     return %orig | (1ULL << 2) | (1ULL << 6);
-}
-
-%end
-
-// Prevent Lock Screen Camera Prewarm on edge touch/swipe so battery isn't used
-%hook SBCameraPrewarmManager
-
-- (void)prewarmCameraForIdentifier:(id)arg1 {
-    // Do not prewarm camera from Lock Screen swipe
-}
-
-- (void)prewarmCameraForIdentifier:(id)arg1 prewarmReason:(id)arg2 {
-    // Do not prewarm camera from Lock Screen swipe
 }
 
 %end
@@ -222,11 +203,60 @@ static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
 
 %end
 
-%end // group SpringBoardLockScreen
+%end // group SpringBoardLockScreenPageSwipes
+
+%group SpringBoardLockScreenPosterSwitcher
+
+// ----------------------------------------------------------------------------
+// 3. Disable iOS 16+ Lock Screen Touch-and-Hold Wallpaper/Poster Switcher
+// ----------------------------------------------------------------------------
+%hook CSCoverSheetViewController
+
+- (void)_setupPosterSwitcherGestureRecognizer {
+    // Prevent CoverSheet from installing the long-press wallpaper switcher recognizer
+}
+
+- (void)_handlePosterSwitcherActivation:(id)sender {
+    // Prevent Lock Screen wallpaper switcher / customization gallery activation
+}
+
+%end
+
+%end // group SpringBoardLockScreenPosterSwitcher
+
+%group SpringBoardLockScreenCameraPrewarm
+
+// Prevent Lock Screen Camera Prewarm on edge touch/swipe so battery isn't used
+%hook SBCameraPrewarmManager
+
+- (void)prewarmCameraForIdentifier:(id)arg1 {
+    // Do not prewarm camera from Lock Screen swipe
+}
+
+- (void)prewarmCameraForIdentifier:(id)arg1 prewarmReason:(id)arg2 {
+    // Do not prewarm camera from Lock Screen swipe
+}
+
+%end
+
+%end // group SpringBoardLockScreenCameraPrewarm
 
 %ctor {
-    NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-    if ([bundleID isEqualToString:@"com.apple.springboard"]) {
-        %init(SpringBoardLockScreen);
+    @autoreleasepool {
+        NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+        if (![bundleID isEqualToString:@"com.apple.springboard"]) return;
+
+        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenQuickActions)) {
+            %init(SpringBoardLockScreenQuickActions);
+        }
+        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenPageSwipes)) {
+            %init(SpringBoardLockScreenPageSwipes);
+        }
+        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenPosterSwitcher)) {
+            %init(SpringBoardLockScreenPosterSwitcher);
+        }
+        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenCameraPrewarm)) {
+            %init(SpringBoardLockScreenCameraPrewarm);
+        }
     }
 }

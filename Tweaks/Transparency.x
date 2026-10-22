@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // Transparency.x — AIOTweaks
@@ -123,10 +124,11 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
         if (!bundleID) return;
 
         BOOL isSpringBoard = [bundleID isEqualToString:@"com.apple.springboard"];
-        if (isSpringBoard) {
+        if (isSpringBoard && AIOTweaksPrefEnabled(AIOTweaksPrefTransparentDock)) {
             %init(SpringBoardTransparency);
         }
-        if (isSpringBoard || [[mainBundle executablePath] containsString:@".app/"]) {
+        if ((isSpringBoard || [[mainBundle executablePath] containsString:@".app/"]) &&
+            AIOTweaksPrefEnabled(AIOTweaksPrefTransparentHomeBar)) {
             %init(GlobalHomeBarTransparency);
         }
     }

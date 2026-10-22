@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // HomeScreenTodayView.x — AIOTweaks
@@ -115,6 +116,7 @@ static void AIOTweaksHideTodayViewPages(SBRootFolderView *folderView) {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
         if (![bundleID isEqualToString:@"com.apple.springboard"]) return;
+        if (!AIOTweaksPrefEnabled(AIOTweaksPrefHomeScreenTodayView)) return;
 
         Class rootFolderControllerClass = objc_getClass("SBRootFolderController");
         Class rootFolderViewClass = objc_getClass("SBRootFolderView");

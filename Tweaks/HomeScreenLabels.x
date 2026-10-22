@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // HomeScreenLabels.x — AIOTweaks
@@ -184,7 +185,8 @@ static inline UIView *safeGetViewIvarHSL(id obj, const char *ivarName) {
 %ctor {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-        if ([bundleID isEqualToString:@"com.apple.springboard"]) {
+        if ([bundleID isEqualToString:@"com.apple.springboard"] &&
+            AIOTweaksPrefEnabled(AIOTweaksPrefHomeScreenLabels)) {
             %init(SpringBoardIconLabels);
         }
     }

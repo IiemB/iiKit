@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // OLEDKeyboard.x — AIOTweaks
@@ -57,9 +58,10 @@
 
         // Initialize in SpringBoard, all .app bundles, and keyboard/app extensions (.appex)
         NSString *execPath = [mainBundle executablePath];
-        if ([bundleID isEqualToString:@"com.apple.springboard"] ||
-            [execPath containsString:@".app/"] ||
-            [execPath containsString:@".appex/"]) {
+        if (([bundleID isEqualToString:@"com.apple.springboard"] ||
+             [execPath containsString:@".app/"] ||
+             [execPath containsString:@".appex/"]) &&
+            AIOTweaksPrefEnabled(AIOTweaksPrefOLEDKeyboard)) {
             %init(GlobalOLEDKeyboard);
         }
     }

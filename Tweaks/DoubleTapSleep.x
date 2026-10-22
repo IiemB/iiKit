@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // DoubleTapSleep.x — AIOTweaks
@@ -228,7 +229,8 @@ static void AIOTweaksAttachDoubleTap(UIView *view, BOOL isLockScreen) {
 %ctor {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-        if ([bundleID isEqualToString:@"com.apple.springboard"]) {
+        if ([bundleID isEqualToString:@"com.apple.springboard"] &&
+            AIOTweaksPrefEnabled(AIOTweaksPrefDoubleTapSleep)) {
             %init(SpringBoardDoubleTapSleep);
         }
     }

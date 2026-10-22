@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <objc/runtime.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // AppSwitcher.x — AIOTweaks
@@ -213,7 +214,8 @@ static void AIOTweaksCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
 %ctor {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-        if ([bundleID isEqualToString:@"com.apple.springboard"]) {
+        if ([bundleID isEqualToString:@"com.apple.springboard"] &&
+            AIOTweaksPrefEnabled(AIOTweaksPrefAppSwitcherCloseAll)) {
             %init(SpringBoardAppSwitcher);
         }
     }

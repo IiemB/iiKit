@@ -2,7 +2,7 @@ export THEOS ?= /Users/iiemb/theos
 THEOS_PACKAGE_SCHEME = rootless
 
 TARGET := iphone:clang:latest:15.0
-INSTALL_TARGET_PROCESSES = SpringBoard MobilePhone InCallService
+INSTALL_TARGET_PROCESSES = SpringBoard MobilePhone InCallService Preferences
 ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
@@ -13,6 +13,17 @@ AIOTweaks_FILES = $(wildcard Tweaks/*.x Tweaks/*.xm)
 AIOTweaks_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
 
 include $(THEOS_MAKE_PATH)/tweak.mk
+
+BUNDLE_NAME = AIOTweaksPrefs
+
+AIOTweaksPrefs_FILES = prefs/AIOTweaksPrefsListController.m
+AIOTweaksPrefs_FRAMEWORKS = UIKit
+AIOTweaksPrefs_INSTALL_PATH = /Library/PreferenceBundles
+AIOTweaksPrefs_RESOURCE_DIRS = prefs/Resources
+AIOTweaksPrefs_CFLAGS = -fobjc-arc
+AIOTweaksPrefs_LDFLAGS = -undefined dynamic_lookup
+
+include $(THEOS_MAKE_PATH)/bundle.mk
 
 # Automatically generate both rootless (iphoneos-arm64) and roothide (iphoneos-arm64e) packages on `make package`
 after-package::

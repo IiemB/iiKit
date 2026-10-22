@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import "AIOTweaksPrefs.h"
 
 // ============================================================================
 // PhoneKeypad.x — AIOTweaks
@@ -81,8 +82,9 @@
 %ctor {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-        if ([bundleID isEqualToString:@"com.apple.mobilephone"] ||
-            [bundleID isEqualToString:@"com.apple.InCallService"]) {
+        if (([bundleID isEqualToString:@"com.apple.mobilephone"] ||
+             [bundleID isEqualToString:@"com.apple.InCallService"]) &&
+            AIOTweaksPrefEnabled(AIOTweaksPrefSilentPhoneKeypad)) {
             %init(MobilePhoneKeypadSilent);
         }
     }
