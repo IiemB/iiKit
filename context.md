@@ -21,6 +21,7 @@
 ├── Tweak.x           # Index overview (all active modules live in Tweaks/*.x)
 ├── Tweaks/           # Modular Logos (.x) feature files auto-compiled by Makefile
 │   ├── HomeScreenLabels.x
+│   ├── HomeScreenTodayView.x
 │   ├── LockScreen.x
 │   ├── Transparency.x
 │   ├── DoubleTapSleep.x
@@ -56,6 +57,10 @@
    - Swiping/pulling down on any app card in the App Switcher (`SBFluidSwitcherItemContainer`) closes all open apps (`SBMainSwitcherViewController` / `SBMainSwitcherControllerCoordinator` / `SBFluidSwitcherViewController`) and triggers haptic feedback (`UIImpactFeedbackGenerator` + `UINotificationFeedbackGenerator`).
 7. **OLED Black Keyboard (`Tweaks/OLEDKeyboard.x`)**:
    - Forces dark keyboard rendering (`-[UIKBRenderConfig setLightKeyboard:NO]`) and pure `#000000` OLED black backgrounds on `UIKeyboard` and `UIKeyboardDockView` across all apps (based on `Easy-Z/BARK`).
+8. **Disabled Home Screen Today View (`Tweaks/HomeScreenTodayView.x`)**:
+   - Removes the Home Screen **Today View** (the leftmost widget page reached by swiping right) (`SBRootFolderController`, `SBRootFolderView`).
+   - Handles both the single leading custom view (iOS 15–17) and the indexed leading custom view list introduced in iOS 18 (`leadingCustomViewControllers`).
+   - Disables the leading-edge Home Screen overlay/sidebar Today View on iPad and newer iOS versions (`SBHomeScreenOverlayController`).
 
 ## Build Output
 Running `make package FINALPACKAGE=1` produces two `.deb` archives in `packages/`:
