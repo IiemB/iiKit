@@ -28,6 +28,10 @@ This document defines the workflow, build rules, and coding conventions for AI a
   - Every feature module must gate its `%init(...)` with `AIOTweaksPrefEnabled(AIOTweaksPref<Feature>)` and declare the key in `Tweaks/AIOTweaksPrefs.h`.
   - Add the matching switch in `prefs/AIOTweaksPrefsListController.m`; all keys default to `ON` so existing installs keep their behavior.
   - Preference changes apply after a respring (`PreferencesBridge.x` handles the Settings respring button).
+- **Control Center Module (`controlcenter/`)**:
+  - The 1×1 tile is a separate `bundle.mk` target installed to `/Library/ControlCenter/Bundles` and requires **CCSupport**; declare both bundles through the single `BUNDLE_NAME` list and one `bundle.mk` include.
+  - Module size comes from the `CCSModuleSize` key (Portrait/Landscape `1×1`) in `controlcenter/Resources/Info.plist`.
+  - `ControlCenterUIKit` has no link stub, so the bundle links with `-undefined dynamic_lookup` and is resolved against SpringBoard at load time.
 
 ## 3. Roothide & Rootless Path Compatibility
 - **Avoid Hardcoded `/var/jb` Paths**:

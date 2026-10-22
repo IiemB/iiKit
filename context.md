@@ -31,6 +31,7 @@
 │   ├── AppSwitcher.x
 │   └── OLEDKeyboard.x
 ├── prefs/            # Settings preference bundle (AIOTweaksPrefs)
+├── controlcenter/    # Control Center module bundle (AIOTweaksURLLauncher)
 ├── layout/           # PreferenceLoader entry for Settings
 ├── packages/         # Output directory for built .deb packages
 ├── context.md        # Project architecture, target environment, and feature inventory
@@ -65,6 +66,11 @@
    - Removes the Home Screen **Today View** (the leftmost widget page reached by swiping right) (`SBRootFolderController`, `SBRootFolderView`).
    - Handles both the single leading custom view (iOS 15–17) and the indexed leading custom view list introduced in iOS 18 (`leadingCustomViewControllers`).
    - Disables the leading-edge Home Screen overlay/sidebar Today View on iPad and newer iOS versions (`SBHomeScreenOverlayController`).
+9. **Control Center "Open URL" Tile (`controlcenter/`)**:
+   - Ships a 1×1 Control Center module (`AIOTweaksURLLauncher.bundle`) installed to `Library/ControlCenter/Bundles`, loaded by **CCSupport** (`com.opa334.ccsupport`).
+   - Tapping the tile opens the URL configured in Settings → AIOTweaks; bare hosts are upgraded to `https://` and custom schemes (`prefs:`, `shortcuts:`, `mailto:`) pass through unchanged.
+   - Implemented as a `CCUIToggleModule` that always reports "off", so the tile acts as a momentary action button and springs back.
+   - If no URL is set, the tile opens the AIOTweaks settings page instead.
 
 ## Preferences
 - **Settings → AIOTweaks** page (`prefs/`, installed as `AIOTweaksPrefs.bundle` via PreferenceLoader) with its own icon (`prefs/Resources/icon.png`, `@2x`, `@3x`).
@@ -74,6 +80,7 @@
   - Appearance: transparent Dock, transparent Home Bar, OLED keyboard.
   - Gestures: double-tap to sleep, App Switcher swipe-down close all.
   - Phone: silent keypad.
+  - Control Center: text field for the **tile URL** (applies immediately, no respring needed).
 - Preferences are stored in the `com.iiemb.aiotweaks` `NSUserDefaults` suite (no hardcoded `/var/jb` path).
 - Apply after a respring; the page includes a **Respring Now** button (`PreferencesBridge.x` restarts SpringBoard via Darwin notification).
 
@@ -85,4 +92,5 @@ Running `make package FINALPACKAGE=1` produces two `.deb` archives in `packages/
 Both packages install:
 - `AIOTweaks.dylib` + filter plist in `Library/MobileSubstrate/DynamicLibraries`
 - `AIOTweaksPrefs.bundle` in `Library/PreferenceBundles`
+- `AIOTweaksURLLauncher.bundle` in `Library/ControlCenter/Bundles`
 - `AIOTweaks.plist` in `Library/PreferenceLoader/Preferences` (Settings entry)

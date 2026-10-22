@@ -14,7 +14,7 @@ AIOTweaks_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
-BUNDLE_NAME = AIOTweaksPrefs
+BUNDLE_NAME = AIOTweaksPrefs AIOTweaksURLLauncher
 
 AIOTweaksPrefs_FILES = prefs/AIOTweaksPrefsListController.m
 AIOTweaksPrefs_FRAMEWORKS = UIKit
@@ -22,6 +22,14 @@ AIOTweaksPrefs_INSTALL_PATH = /Library/PreferenceBundles
 AIOTweaksPrefs_RESOURCE_DIRS = prefs/Resources
 AIOTweaksPrefs_CFLAGS = -fobjc-arc
 AIOTweaksPrefs_LDFLAGS = -undefined dynamic_lookup
+
+AIOTweaksURLLauncher_BUNDLE_EXTENSION = bundle
+AIOTweaksURLLauncher_FILES = controlcenter/AIOTweaksURLLauncher.m
+AIOTweaksURLLauncher_FRAMEWORKS = UIKit
+AIOTweaksURLLauncher_INSTALL_PATH = /Library/ControlCenter/Bundles
+AIOTweaksURLLauncher_RESOURCE_DIRS = controlcenter/Resources
+AIOTweaksURLLauncher_CFLAGS = -fobjc-arc
+AIOTweaksURLLauncher_LDFLAGS = -undefined dynamic_lookup
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

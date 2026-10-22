@@ -70,6 +70,25 @@
         [specifiers addObject:[self aioGroupWithTitle:@"Phone" footer:nil]];
         [specifiers addObject:[self aioSwitchWithTitle:@"Silent Phone Keypad" key:AIOTweaksPrefSilentPhoneKeypad]];
 
+        [specifiers addObject:[self aioGroupWithTitle:@"Control Center"
+                                               footer:@"The \"Open URL\" 1x1 tile opens this URL. Bare hosts such as example.com open over HTTPS. URL changes apply immediately; no respring needed. Leave empty to open this page instead."]];
+
+        PSSpecifier *urlCell = [PSSpecifier preferenceSpecifierNamed:@"Tile URL"
+                                                              target:self
+                                                                 set:@selector(setPreferenceValue:specifier:)
+                                                                 get:@selector(readPreferenceValue:)
+                                                              detail:nil
+                                                                cell:PSEditTextCell
+                                                                edit:nil];
+        [urlCell setProperty:AIOTweaksPrefURLLauncher forKey:@"key"];
+        [urlCell setProperty:AIOTweaksPrefsDomain forKey:@"defaults"];
+        [urlCell setProperty:@"" forKey:@"default"];
+        [urlCell setProperty:@"https://example.com" forKey:@"placeholder"];
+        [urlCell setProperty:@(UIKeyboardTypeURL) forKey:@"keyboard"];
+        [urlCell setProperty:@NO forKey:@"autoCaps"];
+        [urlCell setProperty:@NO forKey:@"autoCorrection"];
+        [specifiers addObject:urlCell];
+
         [specifiers addObject:[self aioGroupWithTitle:@"Apply"
                                                footer:@"Changes take effect after a respring. App-level changes (Home Bar, keyboard, keypad) need the app to be relaunched."]];
 

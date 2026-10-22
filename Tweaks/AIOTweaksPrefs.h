@@ -20,6 +20,7 @@
 #define AIOTweaksPrefAppSwitcherCloseAll      @"AppSwitcherCloseAll"
 #define AIOTweaksPrefOLEDKeyboard             @"OLEDKeyboard"
 #define AIOTweaksPrefSilentPhoneKeypad        @"SilentPhoneKeypad"
+#define AIOTweaksPrefURLLauncher              @"URLLauncher"
 
 // Missing keys default to YES so existing installs keep the current behavior.
 static inline BOOL AIOTweaksPrefEnabled(NSString *key) {
