@@ -5,8 +5,8 @@
 // ============================================================================
 // Transparency.x — AIOTweaks
 // 1. Transparent Dock background (SBDockView, SBFloatingDockPlatterView)
-// 2. Transparent Home Bar (Home Grabber) globally across SpringBoard & all Apps
-//    while keeping swipe gestures active
+// 2. Transparent Home Bar (Home Grabber / Home Affordance) across SpringBoard,
+//    Lock Screen (CoverSheet), and all Apps while keeping swipe gestures active
 // ============================================================================
 
 // Safe ivar lookup: checks class_getInstanceVariable first so it NEVER throws NSUndefinedKeyException
@@ -34,8 +34,22 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
 @interface SBHomeGrabberView : UIView
 @end
 
+@interface CSHomeAffordanceView : UIView
+@end
+
+@interface CSHomeAffordanceViewController : UIViewController
+@end
+
+@interface CSTeachableMomentsContainerView : UIView
+@property (nonatomic, retain) UIView *homeAffordanceContainerView;
+@end
+
+@interface SBDashBoardTeachableMomentsContainerView : UIView
+@property (nonatomic, retain) UIView *homeAffordanceContainerView;
+@end
+
 // ============================================================================
-// GROUP 1: SpringBoard-Only Hooks (Dock & SB Home Grabber)
+// GROUP 1: SpringBoard-Only Hooks (Transparent Dock)
 // ============================================================================
 %group SpringBoardTransparency
 
@@ -84,7 +98,187 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
 %end // group SpringBoardTransparency
 
 // ============================================================================
-// GROUP 2: Global Hooks (SpringBoard + All Apps via com.apple.UIKit)
+// GROUP 2: SpringBoard & Lock Screen (CoverSheet) Home Bar Transparency
+// Hides the Lock Screen home indicator (CSHomeAffordanceView /
+// CSTeachableMomentsContainerView) and SpringBoard home grabber views
+// safely without calling -[SBHomeGrabberView setHidden:], which throws an
+// NSInternalInconsistencyException in SpringBoard on iOS 16+.
+// ============================================================================
+%group SpringBoardHomeBarTransparency
+
+// ----------------------------------------------------------------------------
+// 2A. Lock Screen CoverSheet Home Affordance View
+// ----------------------------------------------------------------------------
+%hook CSHomeAffordanceView
+
+- (void)layoutSubviews {
+    %orig;
+    self.alpha = 0.0;
+    self.layer.opacity = 0.0;
+    self.layer.hidden = YES;
+    for (UIView *subview in self.subviews) {
+        subview.alpha = 0.0;
+        subview.layer.opacity = 0.0;
+        subview.layer.hidden = YES;
+    }
+}
+
+- (void)didMoveToWindow {
+    %orig;
+    self.alpha = 0.0;
+    self.layer.opacity = 0.0;
+    self.layer.hidden = YES;
+}
+
+- (CGFloat)alpha {
+    return 0.0;
+}
+
+- (void)setAlpha:(CGFloat)alpha {
+    %orig(0.0);
+}
+
+%end
+
+// ----------------------------------------------------------------------------
+// 2B. Lock Screen CoverSheet Home Affordance View Controller
+// ----------------------------------------------------------------------------
+%hook CSHomeAffordanceViewController
+
+- (void)viewDidLoad {
+    %orig;
+    if ([self isViewLoaded]) {
+        self.view.alpha = 0.0;
+        self.view.layer.opacity = 0.0;
+        self.view.layer.hidden = YES;
+    }
+}
+
+- (void)viewWillLayoutSubviews {
+    %orig;
+    if ([self isViewLoaded]) {
+        self.view.alpha = 0.0;
+        self.view.layer.opacity = 0.0;
+        self.view.layer.hidden = YES;
+    }
+}
+
+%end
+
+// ----------------------------------------------------------------------------
+// 2C. Lock Screen Teachable Moments Container Views (Host for Home Affordance)
+// ----------------------------------------------------------------------------
+%hook CSTeachableMomentsContainerView
+
+- (void)layoutSubviews {
+    %orig;
+    UIView *homeContainer = safeGetViewIvarTR(self, "_homeAffordanceContainerView");
+    if (!homeContainer && [self respondsToSelector:@selector(homeAffordanceContainerView)]) {
+        homeContainer = self.homeAffordanceContainerView;
+    }
+    if (homeContainer) {
+        homeContainer.alpha = 0.0;
+        homeContainer.layer.opacity = 0.0;
+        homeContainer.layer.hidden = YES;
+    }
+}
+
+- (void)setHomeAffordanceContainerView:(UIView *)view {
+    %orig(view);
+    if (view) {
+        view.alpha = 0.0;
+        view.layer.opacity = 0.0;
+        view.layer.hidden = YES;
+    }
+}
+
+%end
+
+%hook SBDashBoardTeachableMomentsContainerView
+
+- (void)layoutSubviews {
+    %orig;
+    UIView *homeContainer = safeGetViewIvarTR(self, "_homeAffordanceContainerView");
+    if (!homeContainer && [self respondsToSelector:@selector(homeAffordanceContainerView)]) {
+        homeContainer = self.homeAffordanceContainerView;
+    }
+    if (homeContainer) {
+        homeContainer.alpha = 0.0;
+        homeContainer.layer.opacity = 0.0;
+        homeContainer.layer.hidden = YES;
+    }
+}
+
+- (void)setHomeAffordanceContainerView:(UIView *)view {
+    %orig(view);
+    if (view) {
+        view.alpha = 0.0;
+        view.layer.opacity = 0.0;
+        view.layer.hidden = YES;
+    }
+}
+
+%end
+
+// ----------------------------------------------------------------------------
+// 2D. SpringBoard Home Grabber Views (Never call setHidden: directly)
+// ----------------------------------------------------------------------------
+%hook SBHomeGrabberView
+
+- (void)layoutSubviews {
+    %orig;
+    self.alpha = 0.0;
+    self.layer.opacity = 0.0;
+    self.layer.hidden = YES;
+}
+
+- (void)didMoveToWindow {
+    %orig;
+    self.alpha = 0.0;
+    self.layer.opacity = 0.0;
+    self.layer.hidden = YES;
+}
+
+- (CGFloat)alpha {
+    return 0.0;
+}
+
+- (void)setAlpha:(CGFloat)alpha {
+    %orig(0.0);
+}
+
+%end
+
+%hook SBFHomeGrabberView
+
+- (void)layoutSubviews {
+    %orig;
+    self.alpha = 0.0;
+    self.layer.opacity = 0.0;
+    self.layer.hidden = YES;
+}
+
+- (void)didMoveToWindow {
+    %orig;
+    self.alpha = 0.0;
+    self.layer.opacity = 0.0;
+    self.layer.hidden = YES;
+}
+
+- (CGFloat)alpha {
+    return 0.0;
+}
+
+- (void)setAlpha:(CGFloat)alpha {
+    %orig(0.0);
+}
+
+%end
+
+%end // group SpringBoardHomeBarTransparency
+
+// ============================================================================
+// GROUP 3: Global Hooks (SpringBoard + All Apps via com.apple.UIKit)
 // Hides the Home Bar visual pill (MTLumaDodgePillView) in every app and
 // SpringBoard while keeping all swipe-up / app-switching gestures intact.
 // ============================================================================
@@ -126,6 +320,9 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
         BOOL isSpringBoard = [bundleID isEqualToString:@"com.apple.springboard"];
         if (isSpringBoard && AIOTweaksPrefEnabled(AIOTweaksPrefTransparentDock)) {
             %init(SpringBoardTransparency);
+        }
+        if (isSpringBoard && AIOTweaksPrefEnabled(AIOTweaksPrefTransparentHomeBar)) {
+            %init(SpringBoardHomeBarTransparency);
         }
         if ((isSpringBoard || [[mainBundle executablePath] containsString:@".app/"]) &&
             AIOTweaksPrefEnabled(AIOTweaksPrefTransparentHomeBar)) {
