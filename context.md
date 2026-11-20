@@ -14,7 +14,7 @@
 
 ## Repository Structure
 ```text
-~/PROJECTS/iiKit/
+iiKit/
 ├── Makefile          # Theos build configuration (rootless + automatic roothide packaging)
 ├── control           # Debian package metadata (com.iiemb.iikit)
 ├── iiKit.plist   # MobileSubstrate/ElleKit injection filter

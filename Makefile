@@ -1,4 +1,8 @@
-export THEOS ?= /Users/iiemb/theos
+# Local paths (THEOS, TWEAK_REPO) go in .env, which is not committed.
+# Copy .env.example to .env and fill it in.
+-include .env
+THEOS ?= $(HOME)/theos
+export THEOS
 THEOS_PACKAGE_SCHEME = rootless
 
 TARGET := iphone:clang:latest:15.0
@@ -44,3 +48,32 @@ after-package::
 	@rm -rf "$(THEOS_OBJ_DIR)/roothide_stage"
 	@echo "==> Built packages in $(THEOS_PACKAGE_DIR):"
 	@ls -1 "$(THEOS_PACKAGE_DIR)/"*.deb
+
+# ----------------------------------------------------------------------------
+# Publish to the IiemB tweak repo (https://iiemb.github.io/repo/).
+#   make publish      build both packages, copy them and depiction/ into the
+#                     tweak repo (TWEAK_REPO in .env), replacing older iiKit
+#                     packages, then check it
+# Deploying stays a manual step in the profile project (./build.sh, then commit
+# and push iiemb.github.io/).
+# ----------------------------------------------------------------------------
+PUBLISH_ID := $(shell sed -n 's/^Package: *//p' control)
+PUBLISH_VERSION := $(shell sed -n 's/^Version: *//p' control)
+
+.PHONY: publish
+publish:
+	@test -n "$(TWEAK_REPO)" || { echo "error: TWEAK_REPO is not set; add it to .env (see .env.example)"; exit 1; }
+	@test -f "$(TWEAK_REPO)/build.py" || { echo "error: no tweak repo at TWEAK_REPO (build.py not found)"; exit 1; }
+	@# Fresh environment: a nested Theos build breaks on the outer one's exported state.
+	@env -i PATH="$$PATH" HOME="$$HOME" TERM="$$TERM" THEOS="$(THEOS)" \
+	    $(MAKE) --no-print-directory -C "$(CURDIR)" clean package FINALPACKAGE=1
+	@echo "==> Publishing $(PUBLISH_ID) $(PUBLISH_VERSION) to $(TWEAK_REPO)"
+	@rm -f "$(TWEAK_REPO)/debs/$(PUBLISH_ID)_"*.deb
+	@cp "$(THEOS_PACKAGE_DIR)/$(PUBLISH_ID)_$(PUBLISH_VERSION)_iphoneos-arm64.deb" \
+	    "$(THEOS_PACKAGE_DIR)/$(PUBLISH_ID)_$(PUBLISH_VERSION)_iphoneos-arm64e.deb" \
+	    "$(TWEAK_REPO)/debs/"
+	@mkdir -p "$(TWEAK_REPO)/info/$(PUBLISH_ID)"
+	@rsync -a depiction/ "$(TWEAK_REPO)/info/$(PUBLISH_ID)/"
+	@python3 "$(TWEAK_REPO)/build.py"
+	@echo "==> Done. To go live, from $(dir $(TWEAK_REPO:/=)):"
+	@echo "    ./build.sh && cd iiemb.github.io && git add -A && git commit -m \"iiKit $(PUBLISH_VERSION)\" && git push"

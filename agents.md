@@ -42,3 +42,9 @@ This document defines the workflow, build rules, and coding conventions for AI a
 - Whenever a new feature or hook is added to `iiKit`:
   1. Document the feature and hooked classes in `context.md` under **Implemented Features**.
   2. Bump `Version` in `control` if requested by the user.
+
+## 5. Publishing
+- `make publish` runs a clean release build and copies both `.deb` files plus `depiction/` (`info.json`, `description.md`, `changelog.md`) into the tweak repo (`TWEAK_REPO`, set in the uncommitted `.env`; see `.env.example`), then runs its `build.py`.
+- When bumping `Version`, add the new version at the top of `depiction/changelog.md`.
+- Deploying the site (`./build.sh` and pushing `iiemb.github.io/`) is a separate step in the profile project; only do it when asked.
+- Never commit local paths (home directory, project folders). Machine-specific values such as `THEOS` and `TWEAK_REPO` belong in `.env`.
