@@ -1,3 +1,8 @@
+## 1.0.1
+
+**Changed**
+- New iiKit icon in Sileo, Zebra and the repo page.
+
 ## 1.0.0
 
 **Initial release**
