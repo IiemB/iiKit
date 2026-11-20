@@ -1,9 +1,9 @@
-#import "AIOTweaksURLLauncher.h"
+#import "iiKitURLLauncher.h"
 #import <objc/runtime.h>
-#import "../Tweaks/AIOTweaksPrefs.h"
+#import "../Tweaks/iiKitPrefs.h"
 
 // Fallback deep link used when no URL has been configured yet.
-static NSString *const kAIOTweaksPreferencesDeepLink = @"prefs:root=AIOTweaks";
+static NSString *const kiiKitPreferencesDeepLink = @"prefs:root=iiKit";
 
 @interface LSApplicationWorkspace : NSObject
 + (instancetype)defaultWorkspace;
@@ -25,13 +25,13 @@ static NSString *const kAIOTweaksPreferencesDeepLink = @"prefs:root=AIOTweaks";
 - (void)dismissControlCenter;
 @end
 
-@interface CCUIToggleModule (AIOTweaksContentModuleContext)
+@interface CCUIToggleModule (iiKitContentModuleContext)
 - (id)contentModuleContext;
 @end
 
 // A scheme must start with a letter and contain only RFC 3986 scheme characters,
 // so "example.com" and "192.168.1.1:8080" are treated as hosts, not schemes.
-static BOOL AIOTweaksHasValidScheme(NSString *candidate) {
+static BOOL iiKitHasValidScheme(NSString *candidate) {
     NSRange colonRange = [candidate rangeOfString:@":"];
     if (colonRange.location == NSNotFound || colonRange.location == 0) return NO;
 
@@ -51,11 +51,11 @@ static BOOL AIOTweaksHasValidScheme(NSString *candidate) {
 }
 
 // Accepts bare hosts ("example.com") as well as full schemes ("prefs:root=WIFI").
-static NSString *AIOTweaksNormalizedURLString(NSString *rawValue) {
+static NSString *iiKitNormalizedURLString(NSString *rawValue) {
     NSString *trimmed = [rawValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     if (trimmed.length == 0) return nil;
 
-    NSString *candidate = AIOTweaksHasValidScheme(trimmed)
+    NSString *candidate = iiKitHasValidScheme(trimmed)
         ? trimmed
         : [@"https://" stringByAppendingString:trimmed];
 
@@ -63,7 +63,7 @@ static NSString *AIOTweaksNormalizedURLString(NSString *rawValue) {
     return [candidate stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
 }
 
-static BOOL AIOTweaksDeviceIsLocked(void) {
+static BOOL iiKitDeviceIsLocked(void) {
     Class managerClass = objc_getClass("SBLockScreenManager");
     if (!managerClass) return NO;
 
@@ -78,7 +78,7 @@ static BOOL AIOTweaksDeviceIsLocked(void) {
 
 // LSApplicationWorkspace blocks until the target app finishes launching, so it
 // is only ever called off the main thread.
-static void AIOTweaksOpenURLWithWorkspace(NSURL *url) {
+static void iiKitOpenURLWithWorkspace(NSURL *url) {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         Class workspaceClass = objc_getClass("LSApplicationWorkspace");
         if (!workspaceClass) return;
@@ -95,13 +95,13 @@ static void AIOTweaksOpenURLWithWorkspace(NSURL *url) {
 }
 
 // Asynchronous, never blocks SpringBoard. Used when no module context is available.
-static void AIOTweaksOpenURLAsync(NSURL *url) {
+static void iiKitOpenURLAsync(NSURL *url) {
     if (!url) return;
 
     void (^openOnMainThread)(void) = ^{
         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
             if (!success) {
-                AIOTweaksOpenURLWithWorkspace(url);
+                iiKitOpenURLWithWorkspace(url);
             }
         }];
     };
@@ -113,7 +113,7 @@ static void AIOTweaksOpenURLAsync(NSURL *url) {
     }
 }
 
-@implementation AIOTweaksURLLauncher
+@implementation iiKitURLLauncher
 
 - (UIImage *)iconGlyph {
     return [UIImage imageNamed:@"icon"
@@ -141,33 +141,33 @@ static void AIOTweaksOpenURLAsync(NSURL *url) {
         if (now - lastOpenTimestamp < 1.0) return;
         lastOpenTimestamp = now;
 
-        [self aioOpenConfiguredURL];
+        [self iikOpenConfiguredURL];
     });
 }
 
-- (void)aioOpenConfiguredURL {
-    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:AIOTweaksPrefsDomain];
-    NSString *normalized = AIOTweaksNormalizedURLString([defaults stringForKey:AIOTweaksPrefURLLauncher]);
-    NSURL *url = [NSURL URLWithString:normalized ?: kAIOTweaksPreferencesDeepLink];
+- (void)iikOpenConfiguredURL {
+    id configured = iiKitPrefObject(iiKitPrefURLLauncher);
+    NSString *normalized = iiKitNormalizedURLString([configured isKindOfClass:[NSString class]] ? configured : nil);
+    NSURL *url = [NSURL URLWithString:normalized ?: kiiKitPreferencesDeepLink];
     if (!url) return;
 
     id context = [self respondsToSelector:@selector(contentModuleContext)] ? [self contentModuleContext] : nil;
     if (![context respondsToSelector:@selector(openURL:completionHandler:)]) {
-        AIOTweaksOpenURLAsync(url);
+        iiKitOpenURLAsync(url);
         return;
     }
 
     void (^openInControlCenter)(void) = ^{
         [(CCUIContentModuleContext *)context openURL:url completionHandler:^(BOOL success) {
             if (!success) {
-                AIOTweaksOpenURLWithWorkspace(url);
+                iiKitOpenURLWithWorkspace(url);
             }
         }];
     };
 
     // Launching an app while locked is refused, so authenticate first and only
     // open once the user has actually unlocked.
-    if (AIOTweaksDeviceIsLocked() &&
+    if (iiKitDeviceIsLocked() &&
         [context respondsToSelector:@selector(requestAuthenticationWithCompletionHandler:)]) {
         [(CCUIContentModuleContext *)context requestAuthenticationWithCompletionHandler:^(BOOL authenticated) {
             if (!authenticated) return;

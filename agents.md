@@ -1,6 +1,6 @@
 # AI Agent Guidelines (`agents.md`)
 
-This document defines the workflow, build rules, and coding conventions for AI agents working on **AIOTweaks**.
+This document defines the workflow, build rules, and coding conventions for AI agents working on **iiKit**.
 
 ## 1. Build & Packaging Rules
 - **Rootless & Roothide Only**:
@@ -13,20 +13,20 @@ This document defines the workflow, build rules, and coding conventions for AI a
   ```
 - **Verification**:
   - After adding or modifying hooks, always run a clean build (`make clean package FINALPACKAGE=1`) and verify both `.deb` packages are emitted in `packages/`:
-    - `com.iiemb.aiotweaks_<version>_iphoneos-arm64.deb`
-    - `com.iiemb.aiotweaks_<version>_iphoneos-arm64e.deb`
+    - `com.iiemb.iikit_<version>_iphoneos-arm64.deb`
+    - `com.iiemb.iikit_<version>_iphoneos-arm64e.deb`
 
 ## 2. Code Organization & Modularity
 - **Entry Point (`Tweak.x`) & Modular Files (`Tweaks/*.x`)**:
   - Small or SpringBoard-specific hooks can live directly in `Tweak.x` or be split into feature-specific `.x` files inside `Tweaks/` (e.g., `Tweaks/NoIconLabels.x`, `Tweaks/StatusBar.x`).
   - The `Makefile` automatically compiles `Tweak.x` and any `Tweaks/*.x` or `Tweaks/*.xm` files.
-- **Process Filtering (`AIOTweaks.plist` & `%ctor`)**:
+- **Process Filtering (`iiKit.plist` & `%ctor`)**:
   - If a new feature hooks a process other than `SpringBoard` (e.g., `UIKit` across apps, `Preferences`, or specific third-party bundle IDs):
-    1. Update `AIOTweaks.plist` if additional bundle/class filters are needed.
+    1. Update `iiKit.plist` if additional bundle/class filters are needed.
     2. Use Logos `%group` blocks (e.g., `%group SpringBoardHooks`, `%group AppHooks`) and selectively initialize them inside `%ctor` by checking `[[NSBundle mainBundle].bundleIdentifier ...]` or process name so SpringBoard hooks never execute inside unrelated apps or daemons.
-- **Feature Toggles (`Tweaks/AIOTweaksPrefs.h` & `prefs/`)**:
-  - Every feature module must gate its `%init(...)` with `AIOTweaksPrefEnabled(AIOTweaksPref<Feature>)` and declare the key in `Tweaks/AIOTweaksPrefs.h`.
-  - Add the matching switch in `prefs/AIOTweaksPrefsListController.m`; all keys default to `ON` so existing installs keep their behavior.
+- **Feature Toggles (`Tweaks/iiKitPrefs.h` & `prefs/`)**:
+  - Every feature module must gate its `%init(...)` with `iiKitPrefEnabled(iiKitPref<Feature>)` and declare the key in `Tweaks/iiKitPrefs.h`.
+  - Add the matching switch in `prefs/iiKitPrefsListController.m`; all keys default to `ON` so existing installs keep their behavior.
   - Preference changes apply after a respring (`PreferencesBridge.x` handles the Settings respring button).
 - **Control Center Module (`controlcenter/`)**:
   - The 1×1 tile is a separate `bundle.mk` target installed to `/Library/ControlCenter/Bundles` and requires **CCSupport**; declare both bundles through the single `BUNDLE_NAME` list and one `bundle.mk` include.
@@ -39,6 +39,6 @@ This document defines the workflow, build rules, and coding conventions for AI a
   - When referencing tweak resources or preferences on disk, use `rootless.h` / `roothide` path resolution helpers (`jbroot(...)`) or store preferences via `NSUserDefaults` (`initWithSuiteName:`).
 
 ## 4. Documentation Maintenance
-- Whenever a new feature or hook is added to `AIOTweaks`:
+- Whenever a new feature or hook is added to `iiKit`:
   1. Document the feature and hooked classes in `context.md` under **Implemented Features**.
   2. Bump `Version` in `control` if requested by the user.

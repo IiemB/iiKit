@@ -5,9 +5,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>AIOTweaksPrefs</string>
+	<string>iiKitPrefs</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.iiemb.aiotweaks.prefs</string>
+	<string>com.iiemb.iikit.prefs</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -19,6 +19,6 @@
 	<key>CFBundleVersion</key>
 	<string>1.7.0</string>
 	<key>NSPrincipalClass</key>
-	<string>AIOTweaksPrefsListController</string>
+	<string>iiKitPrefsListController</string>
 </dict>
 </plist>

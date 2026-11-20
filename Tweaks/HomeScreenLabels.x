@@ -1,9 +1,9 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// HomeScreenLabels.x — AIOTweaks
+// HomeScreenLabels.x — iiKit
 // 1. Hides all Home Screen and Dock app icon & folder labels
 // 2. Removes TestFlight beta orange/yellow dot & update blue dot
 // 3. Hides open folder title header text
@@ -186,7 +186,7 @@ static inline UIView *safeGetViewIvarHSL(id obj, const char *ivarName) {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
         if ([bundleID isEqualToString:@"com.apple.springboard"] &&
-            AIOTweaksPrefEnabled(AIOTweaksPrefHomeScreenLabels)) {
+            iiKitPrefEnabled(iiKitPrefHomeScreenLabels)) {
             %init(SpringBoardIconLabels);
         }
     }

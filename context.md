@@ -1,7 +1,7 @@
-# AIOTweaks — Project Context (`context.md`)
+# iiKit — Project Context (`context.md`)
 
 ## Overview
-**AIOTweaks** (`com.iiemb.aiotweaks`) is a personal All-In-One iOS jailbreak tweak project targeting modern **Rootless** (`iphoneos-arm64`) and **Roothide / Dopamine-roothide** (`iphoneos-arm64e`) jailbreaks on iOS 15.0+.
+**iiKit** (`com.iiemb.iikit`) is a personal All-In-One iOS jailbreak tweak project targeting modern **Rootless** (`iphoneos-arm64`) and **Roothide / Dopamine-roothide** (`iphoneos-arm64e`) jailbreaks on iOS 15.0+.
 
 ## Target Environment
 - **Supported Jailbreaks**:
@@ -14,13 +14,13 @@
 
 ## Repository Structure
 ```text
-~/PROJECTS/AIOTweaks/
+~/PROJECTS/iiKit/
 ├── Makefile          # Theos build configuration (rootless + automatic roothide packaging)
-├── control           # Debian package metadata (com.iiemb.aiotweaks)
-├── AIOTweaks.plist   # MobileSubstrate/ElleKit injection filter
+├── control           # Debian package metadata (com.iiemb.iikit)
+├── iiKit.plist   # MobileSubstrate/ElleKit injection filter
 ├── Tweak.x           # Index overview (all active modules live in Tweaks/*.x)
 ├── Tweaks/           # Modular Logos (.x) feature files auto-compiled by Makefile
-│   ├── AIOTweaksPrefs.h
+│   ├── iiKitPrefs.h
 │   ├── PreferencesBridge.x
 │   ├── HomeScreenLabels.x
 │   ├── HomeScreenTodayView.x
@@ -30,8 +30,8 @@
 │   ├── PhoneKeypad.x
 │   ├── AppSwitcher.x
 │   └── OLEDKeyboard.x
-├── prefs/            # Settings preference bundle (AIOTweaksPrefs)
-├── controlcenter/    # Control Center module bundle (AIOTweaksURLLauncher)
+├── prefs/            # Settings preference bundle (iiKitPrefs)
+├── controlcenter/    # Control Center module bundle (iiKitURLLauncher)
 ├── layout/           # PreferenceLoader entry for Settings
 ├── packages/         # Output directory for built .deb packages
 ├── context.md        # Project architecture, target environment, and feature inventory
@@ -67,13 +67,13 @@
    - Handles both the single leading custom view (iOS 15–17) and the indexed leading custom view list introduced in iOS 18 (`leadingCustomViewControllers`).
    - Disables the leading-edge Home Screen overlay/sidebar Today View on iPad and newer iOS versions (`SBHomeScreenOverlayController`).
 9. **Control Center "Open URL" Tile (`controlcenter/`)**:
-   - Ships a 1×1 Control Center module (`AIOTweaksURLLauncher.bundle`) installed to `Library/ControlCenter/Bundles`, loaded by **CCSupport** (`com.opa334.ccsupport`).
-   - Tapping the tile opens the URL configured in Settings → AIOTweaks; bare hosts are upgraded to `https://` and custom schemes (`prefs:`, `shortcuts:`, `mailto:`) pass through unchanged.
+   - Ships a 1×1 Control Center module (`iiKitURLLauncher.bundle`) installed to `Library/ControlCenter/Bundles`, loaded by **CCSupport** (`com.opa334.ccsupport`).
+   - Tapping the tile opens the URL configured in Settings → iiKit; bare hosts are upgraded to `https://` and custom schemes (`prefs:`, `shortcuts:`, `mailto:`) pass through unchanged.
    - Implemented as a `CCUIToggleModule` that always reports "off", so the tile acts as a momentary action button and springs back.
-   - If no URL is set, the tile opens the AIOTweaks settings page instead.
+   - If no URL is set, the tile opens the iiKit settings page instead.
 
 ## Preferences
-- **Settings → AIOTweaks** page (`prefs/`, installed as `AIOTweaksPrefs.bundle` via PreferenceLoader) with its own icon (`prefs/Resources/icon.png`, `@2x`, `@3x`).
+- **Settings → iiKit** page (`prefs/`, installed as `iiKitPrefs.bundle` via PreferenceLoader) with its own icon (`prefs/Resources/icon.png`, `@2x`, `@3x`).
 - Every feature has its own switch; all default to **ON**, preserving previous behavior.
   - Home Screen: icon labels/dots, Today View page.
   - Lock Screen: quick actions, Today View/Camera swipes, wallpaper switcher, camera prewarm.
@@ -81,16 +81,16 @@
   - Gestures: double-tap to sleep, App Switcher swipe-down close all.
   - Phone: silent keypad.
   - Control Center: text field for the **tile URL** (applies immediately, no respring needed).
-- Preferences are stored in the `com.iiemb.aiotweaks` `NSUserDefaults` suite (no hardcoded `/var/jb` path).
+- Preferences are stored in the `com.iiemb.iikit` `NSUserDefaults` suite (no hardcoded `/var/jb` path). Values saved by the old AIOTweaks package (`com.iiemb.aiotweaks`) are read as a fallback and copied into the new suite when the Settings page opens (`iiKitMigrateLegacyPrefs`). The package `Replaces`/`Conflicts`/`Provides` `com.iiemb.aiotweaks` so it upgrades cleanly.
 - Apply after a respring; the page includes a **Respring Now** button (`PreferencesBridge.x` restarts SpringBoard via Darwin notification).
 
 ## Build Output
 Running `make package FINALPACKAGE=1` produces two `.deb` archives in `packages/`:
-- `com.iiemb.aiotweaks_<version>_iphoneos-arm64.deb` (Rootless `/var/jb`)
-- `com.iiemb.aiotweaks_<version>_iphoneos-arm64e.deb` (Roothide relative `/` with `@loader_path/.jbroot` `LC_RPATH`)
+- `com.iiemb.iikit_<version>_iphoneos-arm64.deb` (Rootless `/var/jb`)
+- `com.iiemb.iikit_<version>_iphoneos-arm64e.deb` (Roothide relative `/` with `@loader_path/.jbroot` `LC_RPATH`)
 
 Both packages install:
-- `AIOTweaks.dylib` + filter plist in `Library/MobileSubstrate/DynamicLibraries`
-- `AIOTweaksPrefs.bundle` in `Library/PreferenceBundles`
-- `AIOTweaksURLLauncher.bundle` in `Library/ControlCenter/Bundles`
-- `AIOTweaks.plist` in `Library/PreferenceLoader/Preferences` (Settings entry)
+- `iiKit.dylib` + filter plist in `Library/MobileSubstrate/DynamicLibraries`
+- `iiKitPrefs.bundle` in `Library/PreferenceBundles`
+- `iiKitURLLauncher.bundle` in `Library/ControlCenter/Bundles`
+- `iiKit.plist` in `Library/PreferenceLoader/Preferences` (Settings entry)

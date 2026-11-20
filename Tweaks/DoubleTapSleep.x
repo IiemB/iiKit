@@ -1,9 +1,9 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// DoubleTapSleep.x — AIOTweaks
+// DoubleTapSleep.x — iiKit
 // Double-tap on empty space on the Home Screen or Lock Screen to sleep/lock
 // ============================================================================
 
@@ -36,7 +36,7 @@
 
 static NSTimeInterval gLastSleepTimestamp = 0;
 
-static void AIOTweaksSleepDevice(void) {
+static void iiKitSleepDevice(void) {
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     if (now - gLastSleepTimestamp < 0.5) {
         return; // Debounce duplicate triggers if multiple views catch the same double-tap
@@ -57,7 +57,7 @@ static void AIOTweaksSleepDevice(void) {
     }
 }
 
-static BOOL AIOTweaksIsViewInteractiveOnHomeScreen(UIView *hitView, UIView *containerView) {
+static BOOL iiKitIsViewInteractiveOnHomeScreen(UIView *hitView, UIView *containerView) {
     Class iconViewClass = objc_getClass("SBIconView");
     Class widgetViewClass = objc_getClass("SBHWidgetContainerView");
     Class folderViewClass = objc_getClass("SBFloatyFolderView");
@@ -82,7 +82,7 @@ static BOOL AIOTweaksIsViewInteractiveOnHomeScreen(UIView *hitView, UIView *cont
     return NO;
 }
 
-static BOOL AIOTweaksIsViewInteractiveOnLockScreen(UIView *hitView, UIView *containerView) {
+static BOOL iiKitIsViewInteractiveOnLockScreen(UIView *hitView, UIView *containerView) {
     UIView *v = hitView;
     while (v && v != containerView) {
         if ([v isKindOfClass:[UIControl class]]) return YES;
@@ -109,30 +109,30 @@ static BOOL AIOTweaksIsViewInteractiveOnLockScreen(UIView *hitView, UIView *cont
 }
 
 // Dedicated gesture delegate so we never collide with existing UIView / CSCoverSheetView delegate methods
-@interface AIOTweaksDoubleTapDelegate : NSObject <UIGestureRecognizerDelegate>
+@interface iiKitDoubleTapDelegate : NSObject <UIGestureRecognizerDelegate>
 @property (nonatomic, assign) BOOL isLockScreen;
 + (instancetype)homeScreenDelegate;
 + (instancetype)lockScreenDelegate;
 - (void)handleDoubleTap:(UITapGestureRecognizer *)gesture;
 @end
 
-@implementation AIOTweaksDoubleTapDelegate
+@implementation iiKitDoubleTapDelegate
 
 + (instancetype)homeScreenDelegate {
-    static AIOTweaksDoubleTapDelegate *inst = nil;
+    static iiKitDoubleTapDelegate *inst = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        inst = [[AIOTweaksDoubleTapDelegate alloc] init];
+        inst = [[iiKitDoubleTapDelegate alloc] init];
         inst.isLockScreen = NO;
     });
     return inst;
 }
 
 + (instancetype)lockScreenDelegate {
-    static AIOTweaksDoubleTapDelegate *inst = nil;
+    static iiKitDoubleTapDelegate *inst = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        inst = [[AIOTweaksDoubleTapDelegate alloc] init];
+        inst = [[iiKitDoubleTapDelegate alloc] init];
         inst.isLockScreen = YES;
     });
     return inst;
@@ -145,10 +145,10 @@ static BOOL AIOTweaksIsViewInteractiveOnLockScreen(UIView *hitView, UIView *cont
         CGPoint pt = [gesture locationInView:view];
         UIView *hit = [view hitTest:pt withEvent:nil];
         BOOL interactive = self.isLockScreen
-            ? AIOTweaksIsViewInteractiveOnLockScreen(hit, view)
-            : AIOTweaksIsViewInteractiveOnHomeScreen(hit, view);
+            ? iiKitIsViewInteractiveOnLockScreen(hit, view)
+            : iiKitIsViewInteractiveOnHomeScreen(hit, view);
         if (!interactive) {
-            AIOTweaksSleepDevice();
+            iiKitSleepDevice();
         }
     }
 }
@@ -157,8 +157,8 @@ static BOOL AIOTweaksIsViewInteractiveOnLockScreen(UIView *hitView, UIView *cont
     UIView *view = gestureRecognizer.view;
     if (!view || !touch.view) return YES;
     BOOL interactive = self.isLockScreen
-        ? AIOTweaksIsViewInteractiveOnLockScreen(touch.view, view)
-        : AIOTweaksIsViewInteractiveOnHomeScreen(touch.view, view);
+        ? iiKitIsViewInteractiveOnLockScreen(touch.view, view)
+        : iiKitIsViewInteractiveOnHomeScreen(touch.view, view);
     return !interactive;
 }
 
@@ -171,11 +171,11 @@ static BOOL AIOTweaksIsViewInteractiveOnLockScreen(UIView *hitView, UIView *cont
 
 static const void *kDoubleTapInstalledKey = &kDoubleTapInstalledKey;
 
-static void AIOTweaksAttachDoubleTap(UIView *view, BOOL isLockScreen) {
+static void iiKitAttachDoubleTap(UIView *view, BOOL isLockScreen) {
     if (!view || objc_getAssociatedObject(view, kDoubleTapInstalledKey)) return;
-    AIOTweaksDoubleTapDelegate *del = isLockScreen
-        ? [AIOTweaksDoubleTapDelegate lockScreenDelegate]
-        : [AIOTweaksDoubleTapDelegate homeScreenDelegate];
+    iiKitDoubleTapDelegate *del = isLockScreen
+        ? [iiKitDoubleTapDelegate lockScreenDelegate]
+        : [iiKitDoubleTapDelegate homeScreenDelegate];
     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:del action:@selector(handleDoubleTap:)];
     doubleTap.numberOfTapsRequired = 2;
     doubleTap.numberOfTouchesRequired = 1;
@@ -195,7 +195,7 @@ static void AIOTweaksAttachDoubleTap(UIView *view, BOOL isLockScreen) {
 - (void)didMoveToWindow {
     %orig;
     if (self.window) {
-        AIOTweaksAttachDoubleTap(self, NO);
+        iiKitAttachDoubleTap(self, NO);
     }
 }
 
@@ -207,7 +207,7 @@ static void AIOTweaksAttachDoubleTap(UIView *view, BOOL isLockScreen) {
 - (void)didMoveToWindow {
     %orig;
     if (self.window) {
-        AIOTweaksAttachDoubleTap(self, YES);
+        iiKitAttachDoubleTap(self, YES);
     }
 }
 
@@ -218,7 +218,7 @@ static void AIOTweaksAttachDoubleTap(UIView *view, BOOL isLockScreen) {
 - (void)didMoveToWindow {
     %orig;
     if (self.window) {
-        AIOTweaksAttachDoubleTap(self, YES);
+        iiKitAttachDoubleTap(self, YES);
     }
 }
 
@@ -230,7 +230,7 @@ static void AIOTweaksAttachDoubleTap(UIView *view, BOOL isLockScreen) {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
         if ([bundleID isEqualToString:@"com.apple.springboard"] &&
-            AIOTweaksPrefEnabled(AIOTweaksPrefDoubleTapSleep)) {
+            iiKitPrefEnabled(iiKitPrefDoubleTapSleep)) {
             %init(SpringBoardDoubleTapSleep);
         }
     }

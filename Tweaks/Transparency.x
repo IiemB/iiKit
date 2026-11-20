@@ -1,9 +1,9 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// Transparency.x — AIOTweaks
+// Transparency.x — iiKit
 // 1. Transparent Dock background (SBDockView, SBFloatingDockPlatterView)
 // 2. Transparent Home Bar (Home Grabber / Home Affordance) across SpringBoard,
 //    Lock Screen (CoverSheet), and all Apps while keeping swipe gestures active
@@ -318,14 +318,14 @@ static inline UIView *safeGetViewIvarTR(id obj, const char *ivarName) {
         if (!bundleID) return;
 
         BOOL isSpringBoard = [bundleID isEqualToString:@"com.apple.springboard"];
-        if (isSpringBoard && AIOTweaksPrefEnabled(AIOTweaksPrefTransparentDock)) {
+        if (isSpringBoard && iiKitPrefEnabled(iiKitPrefTransparentDock)) {
             %init(SpringBoardTransparency);
         }
-        if (isSpringBoard && AIOTweaksPrefEnabled(AIOTweaksPrefTransparentHomeBar)) {
+        if (isSpringBoard && iiKitPrefEnabled(iiKitPrefTransparentHomeBar)) {
             %init(SpringBoardHomeBarTransparency);
         }
         if ((isSpringBoard || [[mainBundle executablePath] containsString:@".app/"]) &&
-            AIOTweaksPrefEnabled(AIOTweaksPrefTransparentHomeBar)) {
+            iiKitPrefEnabled(iiKitPrefTransparentHomeBar)) {
             %init(GlobalHomeBarTransparency);
         }
     }

@@ -1,9 +1,9 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// LockScreen.x — AIOTweaks
+// LockScreen.x — iiKit
 // 1. Removes Lock Screen Flashlight and Camera quick action buttons
 // 2. Disables Lock Screen Today View (swipe right) and Camera (swipe left)
 // ============================================================================
@@ -246,16 +246,16 @@ static inline UIView *safeGetViewIvarLS(id obj, const char *ivarName) {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
         if (![bundleID isEqualToString:@"com.apple.springboard"]) return;
 
-        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenQuickActions)) {
+        if (iiKitPrefEnabled(iiKitPrefLockScreenQuickActions)) {
             %init(SpringBoardLockScreenQuickActions);
         }
-        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenPageSwipes)) {
+        if (iiKitPrefEnabled(iiKitPrefLockScreenPageSwipes)) {
             %init(SpringBoardLockScreenPageSwipes);
         }
-        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenPosterSwitcher)) {
+        if (iiKitPrefEnabled(iiKitPrefLockScreenPosterSwitcher)) {
             %init(SpringBoardLockScreenPosterSwitcher);
         }
-        if (AIOTweaksPrefEnabled(AIOTweaksPrefLockScreenCameraPrewarm)) {
+        if (iiKitPrefEnabled(iiKitPrefLockScreenCameraPrewarm)) {
             %init(SpringBoardLockScreenCameraPrewarm);
         }
     }

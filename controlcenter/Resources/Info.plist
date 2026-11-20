@@ -7,9 +7,9 @@
 	<key>CFBundleDisplayName</key>
 	<string>Open URL</string>
 	<key>CFBundleExecutable</key>
-	<string>AIOTweaksURLLauncher</string>
+	<string>iiKitURLLauncher</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.iiemb.aiotweaks.ccurllauncher</string>
+	<string>com.iiemb.iikit.ccurllauncher</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -28,7 +28,7 @@
 		<integer>2</integer>
 	</array>
 	<key>NSPrincipalClass</key>
-	<string>AIOTweaksURLLauncher</string>
+	<string>iiKitURLLauncher</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>iPhoneOS</string>

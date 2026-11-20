@@ -1,9 +1,9 @@
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// PhoneKeypad.x — AIOTweaks
+// PhoneKeypad.x — iiKit
 // Disables DTMF / keypad dialer button tones in the Phone app (MobilePhone)
 // ============================================================================
 
@@ -84,7 +84,7 @@
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
         if (([bundleID isEqualToString:@"com.apple.mobilephone"] ||
              [bundleID isEqualToString:@"com.apple.InCallService"]) &&
-            AIOTweaksPrefEnabled(AIOTweaksPrefSilentPhoneKeypad)) {
+            iiKitPrefEnabled(iiKitPrefSilentPhoneKeypad)) {
             %init(MobilePhoneKeypadSilent);
         }
     }

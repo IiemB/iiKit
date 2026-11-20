@@ -1,9 +1,9 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// HomeScreenTodayView.x — AIOTweaks
+// HomeScreenTodayView.x — iiKit
 // Disables the Home Screen Today View (leftmost widget page / swipe right)
 //
 // Older iOS releases expose a single leading custom view; newer releases also
@@ -21,7 +21,7 @@
 - (void)setLeadingCustomViewPageHidden:(BOOL)hidden atIndex:(NSUInteger)index;
 @end
 
-static BOOL AIOTweaksIsTodayViewController(id viewController) {
+static BOOL iiKitIsTodayViewController(id viewController) {
     if (!viewController) return NO;
     NSString *className = NSStringFromClass([viewController class]);
     return [className isEqualToString:@"SBTodayViewController"] ||
@@ -29,7 +29,7 @@ static BOOL AIOTweaksIsTodayViewController(id viewController) {
 }
 
 // Hides every Today View page exposed by the root folder view.
-static void AIOTweaksHideTodayViewPages(SBRootFolderView *folderView) {
+static void iiKitHideTodayViewPages(SBRootFolderView *folderView) {
     if (!folderView) return;
 
     if ([folderView respondsToSelector:@selector(leadingCustomViewControllers)]) {
@@ -37,7 +37,7 @@ static void AIOTweaksHideTodayViewPages(SBRootFolderView *folderView) {
         if (![viewControllers isKindOfClass:[NSArray class]]) return;
 
         [viewControllers enumerateObjectsUsingBlock:^(id viewController, NSUInteger index, BOOL *stop) {
-            if (!AIOTweaksIsTodayViewController(viewController)) return;
+            if (!iiKitIsTodayViewController(viewController)) return;
             if (![folderView respondsToSelector:@selector(setLeadingCustomViewPageHidden:atIndex:)]) return;
             if ([folderView respondsToSelector:@selector(isLeadingCustomViewPageHiddenAtIndex:)] &&
                 [folderView isLeadingCustomViewPageHiddenAtIndex:index]) {
@@ -52,7 +52,7 @@ static void AIOTweaksHideTodayViewPages(SBRootFolderView *folderView) {
         ![folderView respondsToSelector:@selector(setLeadingCustomViewPageHidden:)]) {
         return;
     }
-    if (!AIOTweaksIsTodayViewController([folderView leadingCustomViewController])) return;
+    if (!iiKitIsTodayViewController([folderView leadingCustomViewController])) return;
     if ([folderView respondsToSelector:@selector(isLeadingCustomViewPageHidden)] &&
         [folderView isLeadingCustomViewPageHidden]) {
         return;
@@ -76,12 +76,12 @@ static void AIOTweaksHideTodayViewPages(SBRootFolderView *folderView) {
 
 - (void)didMoveToWindow {
     %orig;
-    AIOTweaksHideTodayViewPages(self);
+    iiKitHideTodayViewPages(self);
 }
 
 - (void)layoutSubviews {
     %orig;
-    AIOTweaksHideTodayViewPages(self);
+    iiKitHideTodayViewPages(self);
 }
 
 %end
@@ -116,7 +116,7 @@ static void AIOTweaksHideTodayViewPages(SBRootFolderView *folderView) {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
         if (![bundleID isEqualToString:@"com.apple.springboard"]) return;
-        if (!AIOTweaksPrefEnabled(AIOTweaksPrefHomeScreenTodayView)) return;
+        if (!iiKitPrefEnabled(iiKitPrefHomeScreenTodayView)) return;
 
         Class rootFolderControllerClass = objc_getClass("SBRootFolderController");
         Class rootFolderViewClass = objc_getClass("SBRootFolderView");

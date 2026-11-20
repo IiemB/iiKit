@@ -1,10 +1,10 @@
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <objc/runtime.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// AppSwitcher.x — AIOTweaks
+// AppSwitcher.x — iiKit
 // Swipe down on any app card in the App Switcher to close all applications
 // with haptic feedback.
 // ============================================================================
@@ -55,7 +55,7 @@ static inline id safeGetObjIvarAS(id obj, const char *ivarName) {
 static __weak SBFluidSwitcherViewController *gActiveFluidSwitcherVC = nil;
 static NSTimeInterval gLastClearAllTimestamp = 0;
 
-static void AIOTweaksTriggerHapticFeedback(void) {
+static void iiKitTriggerHapticFeedback(void) {
     dispatch_async(dispatch_get_main_queue(), ^{
         UIImpactFeedbackGenerator *impact = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy];
         [impact prepare];
@@ -65,7 +65,7 @@ static void AIOTweaksTriggerHapticFeedback(void) {
     });
 }
 
-static NSArray<SBAppLayout *> *AIOTweaksGetAllAppLayouts(id controller) {
+static NSArray<SBAppLayout *> *iiKitGetAllAppLayouts(id controller) {
     if (!controller) return nil;
     if ([controller respondsToSelector:@selector(recentAppLayouts)]) {
         NSArray *arr = [controller recentAppLayouts];
@@ -78,7 +78,7 @@ static NSArray<SBAppLayout *> *AIOTweaksGetAllAppLayouts(id controller) {
     return nil;
 }
 
-static void AIOTweaksCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
+static void iiKitCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     if (now - gLastClearAllTimestamp < 0.8) {
         return;
@@ -86,7 +86,7 @@ static void AIOTweaksCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
     gLastClearAllTimestamp = now;
 
     // 1. Haptic feedback
-    AIOTweaksTriggerHapticFeedback();
+    iiKitTriggerHapticFeedback();
 
     dispatch_async(dispatch_get_main_queue(), ^{
         // 2. Try SBMainSwitcherViewController (iOS 14/15/16+) & SBMainSwitcherControllerCoordinator (iOS 16+)
@@ -119,9 +119,9 @@ static void AIOTweaksCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
         }
 
         // Gather all recent app layouts from whichever singleton/controller holds them
-        NSArray<SBAppLayout *> *layouts = AIOTweaksGetAllAppLayouts(mainSwitcher);
-        if (!layouts.count) layouts = AIOTweaksGetAllAppLayouts(coord);
-        if (!layouts.count) layouts = AIOTweaksGetAllAppLayouts(fluidVC);
+        NSArray<SBAppLayout *> *layouts = iiKitGetAllAppLayouts(mainSwitcher);
+        if (!layouts.count) layouts = iiKitGetAllAppLayouts(coord);
+        if (!layouts.count) layouts = iiKitGetAllAppLayouts(fluidVC);
 
         if (!layouts.count) return;
 
@@ -195,7 +195,7 @@ static void AIOTweaksCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
               targetContentOffset:(CGPoint *)targetContentOffset {
     CGFloat offsetY = scrollView.contentOffset.y;
     if (offsetY < -55.0 || (offsetY < -25.0 && velocity.y < -1.2)) {
-        AIOTweaksCloseAllApps(self);
+        iiKitCloseAllApps(self);
     }
     %orig;
 }
@@ -203,7 +203,7 @@ static void AIOTweaksCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     %orig;
     if (scrollView.isDragging && scrollView.contentOffset.y < -95.0) {
-        AIOTweaksCloseAllApps(self);
+        iiKitCloseAllApps(self);
     }
 }
 
@@ -215,7 +215,7 @@ static void AIOTweaksCloseAllApps(SBFluidSwitcherItemContainer *containerView) {
     @autoreleasepool {
         NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
         if ([bundleID isEqualToString:@"com.apple.springboard"] &&
-            AIOTweaksPrefEnabled(AIOTweaksPrefAppSwitcherCloseAll)) {
+            iiKitPrefEnabled(iiKitPrefAppSwitcherCloseAll)) {
             %init(SpringBoardAppSwitcher);
         }
     }

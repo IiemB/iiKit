@@ -7,29 +7,29 @@ ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = AIOTweaks
+TWEAK_NAME = iiKit
 
-AIOTweaks_FILES = $(wildcard Tweaks/*.x Tweaks/*.xm)
-AIOTweaks_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
+iiKit_FILES = $(wildcard Tweaks/*.x Tweaks/*.xm)
+iiKit_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
-BUNDLE_NAME = AIOTweaksPrefs AIOTweaksURLLauncher
+BUNDLE_NAME = iiKitPrefs iiKitURLLauncher
 
-AIOTweaksPrefs_FILES = prefs/AIOTweaksPrefsListController.m
-AIOTweaksPrefs_FRAMEWORKS = UIKit
-AIOTweaksPrefs_INSTALL_PATH = /Library/PreferenceBundles
-AIOTweaksPrefs_RESOURCE_DIRS = prefs/Resources
-AIOTweaksPrefs_CFLAGS = -fobjc-arc
-AIOTweaksPrefs_LDFLAGS = -undefined dynamic_lookup
+iiKitPrefs_FILES = prefs/iiKitPrefsListController.m
+iiKitPrefs_FRAMEWORKS = UIKit
+iiKitPrefs_INSTALL_PATH = /Library/PreferenceBundles
+iiKitPrefs_RESOURCE_DIRS = prefs/Resources
+iiKitPrefs_CFLAGS = -fobjc-arc
+iiKitPrefs_LDFLAGS = -undefined dynamic_lookup
 
-AIOTweaksURLLauncher_BUNDLE_EXTENSION = bundle
-AIOTweaksURLLauncher_FILES = controlcenter/AIOTweaksURLLauncher.m
-AIOTweaksURLLauncher_FRAMEWORKS = UIKit
-AIOTweaksURLLauncher_INSTALL_PATH = /Library/ControlCenter/Bundles
-AIOTweaksURLLauncher_RESOURCE_DIRS = controlcenter/Resources
-AIOTweaksURLLauncher_CFLAGS = -fobjc-arc
-AIOTweaksURLLauncher_LDFLAGS = -undefined dynamic_lookup
+iiKitURLLauncher_BUNDLE_EXTENSION = bundle
+iiKitURLLauncher_FILES = controlcenter/iiKitURLLauncher.m
+iiKitURLLauncher_FRAMEWORKS = UIKit
+iiKitURLLauncher_INSTALL_PATH = /Library/ControlCenter/Bundles
+iiKitURLLauncher_RESOURCE_DIRS = controlcenter/Resources
+iiKitURLLauncher_CFLAGS = -fobjc-arc
+iiKitURLLauncher_LDFLAGS = -undefined dynamic_lookup
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

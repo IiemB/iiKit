@@ -3,11 +3,11 @@
 #import <unistd.h>
 
 // ============================================================================
-// PreferencesBridge.x — AIOTweaks
+// PreferencesBridge.x — iiKit
 // Restarts SpringBoard when the Settings page asks for a respring.
 // ============================================================================
 
-static void AIOTweaksRespringNotificationCallback(CFNotificationCenterRef center,
+static void iiKitRespringNotificationCallback(CFNotificationCenterRef center,
                                                   void *observer,
                                                   CFStringRef name,
                                                   const void *object,
@@ -22,8 +22,8 @@ static void AIOTweaksRespringNotificationCallback(CFNotificationCenterRef center
 
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
                                         NULL,
-                                        AIOTweaksRespringNotificationCallback,
-                                        CFSTR("com.iiemb.aiotweaks/respring"),
+                                        iiKitRespringNotificationCallback,
+                                        CFSTR("com.iiemb.iikit/respring"),
                                         NULL,
                                         CFNotificationSuspensionBehaviorDeliverImmediately);
     }

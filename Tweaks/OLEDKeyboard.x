@@ -1,8 +1,8 @@
 #import <UIKit/UIKit.h>
-#import "AIOTweaksPrefs.h"
+#import "iiKitPrefs.h"
 
 // ============================================================================
-// OLEDKeyboard.x — AIOTweaks
+// OLEDKeyboard.x — iiKit
 // OLED Black Mode for the iOS System Keyboard (based on Easy-Z/BARK)
 // ============================================================================
 
@@ -61,7 +61,7 @@
         if (([bundleID isEqualToString:@"com.apple.springboard"] ||
              [execPath containsString:@".app/"] ||
              [execPath containsString:@".appex/"]) &&
-            AIOTweaksPrefEnabled(AIOTweaksPrefOLEDKeyboard)) {
+            iiKitPrefEnabled(iiKitPrefOLEDKeyboard)) {
             %init(GlobalOLEDKeyboard);
         }
     }
